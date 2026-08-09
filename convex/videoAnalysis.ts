@@ -8,7 +8,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalAction } from "./_generated/server";
 
-const VISUAL_MODEL = "google/gemini-3.5-flash";
+const VISUAL_MODEL = "meta/muse-spark-1.1";
 const TRANSCRIPTION_MODEL = "openai/gpt-4o-mini-transcribe";
 
 export const videoDnaSchema = z.object({
