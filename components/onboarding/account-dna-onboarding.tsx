@@ -32,7 +32,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 
-const steps = ["Account focus", "Audience context", "Review and save"] as const;
+const steps = ["Your content", "Your audience", "Review and save"] as const;
 const languages = ["English", "Hindi", "Spanish", "Portuguese", "French", "Arabic"];
 
 type AccountDnaForm = {
@@ -116,8 +116,8 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
     setRetryError(null);
     try {
       await retryCohortGeneration();
-    } catch (error) {
-      setRetryError(error instanceof Error ? error.message : "We could not restart cohort generation. Please try again.");
+    } catch {
+      setRetryError("We could not prepare your audience profile. Please try again.");
     } finally {
       setIsRetrying(false);
     }
@@ -169,7 +169,7 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
       setSaveError(
         error instanceof Error
           ? error.message
-          : "We could not save your Account DNA. Please try again.",
+          : "We could not save your audience details. Please try again.",
       );
       setIsReplaceDialogOpen(false);
     } finally {
@@ -183,17 +183,17 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
         <div className="space-y-3">
           <h1 id="account-dna-heading" className="text-4xl font-semibold tracking-tight md:text-5xl">
             {step === 0
-              ? "Describe your account focus."
+              ? "What do you post about?"
               : step === 1
-                ? "Add the audience context."
-                : "Review your Account DNA."}
+                ? "Who do you want to reach?"
+                : "Review your audience details."}
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
             {step === 0
-              ? "Start with the subject area that anchors the content you want to evaluate."
+              ? "Tell us the main topic of the reels you want feedback on."
               : step === 1
-                ? "This context makes the synthetic cohort a better representation of the audience you intend to reach."
-                : "You remain in control of how to use this simulated audience record."}
+                ? "A few details help us make your feedback feel more relevant."
+                : "You decide what feedback to use and what to post."}
           </p>
           {step === 0 ? (
             <Button disabled={isSaving} onClick={useDemoSetup} variant="outline">
@@ -234,7 +234,7 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
 
         {saveError ? (
           <div aria-live="assertive" className="border border-destructive bg-destructive/10 p-4 text-sm text-foreground" role="alert">
-            <p className="font-medium">Your Account DNA was not saved.</p>
+            <p className="font-medium">Your audience details were not saved.</p>
             <p className="mt-1">{saveError}</p>
           </div>
         ) : null}
@@ -260,7 +260,7 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
             </Button>
           ) : (
             <Button disabled={isSaving} onClick={requestSave}>
-              {isSaving ? "Saving Account DNA…" : "Create Account DNA"}
+              {isSaving ? "Saving your audience…" : "Save my audience"}
             </Button>
           )}
         </div>
@@ -269,15 +269,15 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
       <AlertDialog onOpenChange={setIsReplaceDialogOpen} open={isReplaceDialogOpen}>
         <AlertDialogContent className="rounded-[var(--radius-container)] border border-foreground bg-background shadow-[var(--shadow-action)]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Replace the saved audience cohort?</AlertDialogTitle>
+            <AlertDialogTitle>Update your audience details?</AlertDialogTitle>
             <AlertDialogDescription>
-              Saving these edits creates a new Account DNA cohort. Past analyses keep their saved results, but future assessments use the replacement cohort.
+              Your past reports will stay the same. New reviews will use these updated audience details.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="rounded-b-[var(--radius-container)] bg-card">
-            <AlertDialogCancel disabled={isSaving}>Keep current cohort</AlertDialogCancel>
+            <AlertDialogCancel disabled={isSaving}>Keep current details</AlertDialogCancel>
             <AlertDialogAction disabled={isSaving} onClick={() => void persistAccountDna(true)}>
-              {isSaving ? "Replacing cohort…" : "Replace cohort"}
+              {isSaving ? "Updating audience…" : "Update audience"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -311,7 +311,7 @@ function OnboardingFrame({ children, currentStep, showSteps = true, withinDashbo
             <Zap aria-hidden="true" className="size-4" />
           </span>
           <span className="font-semibold tracking-tight">Is It Viral</span>
-          <span className="text-sm text-muted-foreground">Account DNA</span>
+          <span className="text-sm text-muted-foreground">Your audience</span>
         </div>
       </header>
 
@@ -328,7 +328,7 @@ function AccountFocusStep({ disabled, error, niche, onChange }: {
 }) {
   return (
     <div className="max-w-2xl space-y-3">
-      <Label htmlFor="niche">What is your account’s niche?</Label>
+      <Label htmlFor="niche">What do you post about?</Label>
       <Input
         aria-describedby={error ? "niche-error" : "niche-description"}
         aria-invalid={Boolean(error)}
@@ -340,7 +340,7 @@ function AccountFocusStep({ disabled, error, niche, onChange }: {
         value={niche}
       />
       <p className="text-sm leading-6 text-muted-foreground" id="niche-description">
-        Use the topic that best describes the content strategy you want to assess.
+        Choose the topic that best describes the reels you want feedback on.
       </p>
       <FieldError id="niche-error" message={error} />
     </div>
@@ -364,12 +364,12 @@ function AudienceContextStep({ disabled, errors, form, onChange }: {
           id="intended-audience"
           maxLength={1000}
           onChange={(event) => onChange("intendedAudience", event.target.value)}
-          placeholder="Describe the people this content should be useful or compelling to."
+          placeholder="Describe the people you want these reels to help, entertain, or inspire."
           rows={5}
           value={form.intendedAudience}
         />
         <p className="text-sm leading-6 text-muted-foreground" id="intended-audience-description">
-          Include the needs, circumstances, or point of view that define your intended audience.
+          Include what they care about, need, or enjoy.
         </p>
         <FieldError id="intended-audience-error" message={errors.intendedAudience} />
       </div>
@@ -426,9 +426,9 @@ function ReviewStep({ form }: { form: AccountDnaForm }) {
         <AccountDnaRecordRow label="Region" value={form.region} />
       </dl>
       <div className="border border-border bg-card p-6">
-        <p className="font-medium">A record for guidance, not a promise.</p>
+        <p className="font-medium">Useful feedback, not a promise.</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Account DNA creates a stable synthetic audience for simulated reel assessments. It does not access Instagram’s private ranking systems or guarantee reach, growth, or performance.
+          Your audience details help tailor feedback for each reel. They do not predict reach, growth, or performance on Instagram.
         </p>
       </div>
     </div>
@@ -438,14 +438,14 @@ function ReviewStep({ form }: { form: AccountDnaForm }) {
 function LedgerNote() {
   return (
     <aside className="h-fit border border-border bg-card p-6 lg:mt-12" aria-label="How Account DNA is used">
-      <h2 className="text-xl font-semibold tracking-tight">A durable audience record.</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Your saved audience.</h2>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Your answers define the strategy context. The system then saves one stable synthetic cohort for future assessments.
+        These details help keep feedback relevant every time you review a reel.
       </p>
       <ul className="mt-6 space-y-3 border-t border-border pt-5 text-sm leading-6 text-muted-foreground">
-        <li>One saved audience cohort per account</li>
-        <li>70 intended-audience and 30 adjacent personas</li>
-        <li>Edits deliberately replace future-cohort context</li>
+        <li>One audience profile for your account</li>
+        <li>Built around the people you want to reach</li>
+        <li>Update it whenever your focus changes</li>
       </ul>
     </aside>
   );
@@ -477,13 +477,13 @@ function validateStep(form: AccountDnaForm, step: number): FieldErrors {
 
   if (step === 0 || step === 1) {
     if (!form.niche.trim()) {
-      errors.niche = "Enter the topic that defines your account focus.";
+      errors.niche = "Enter the main topic of your reels.";
     }
   }
 
   if (step === 1) {
     if (!form.intendedAudience.trim()) {
-      errors.intendedAudience = "Describe the audience you intend to reach.";
+      errors.intendedAudience = "Describe the people you want to reach.";
     }
     if (!form.primaryLanguage) {
       errors.primaryLanguage = "Choose a primary language.";

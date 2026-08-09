@@ -15,7 +15,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: "Is It Viral",
-  description: "Simulation-backed audience-fit guidance for Instagram reels.",
+  description: "Clear feedback for Instagram reels before you post.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

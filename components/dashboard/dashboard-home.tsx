@@ -54,22 +54,22 @@ export function DashboardHome() {
   const { generation } = account;
   const canAnalyze = generation.status === "ready";
   const statusCopy = generation.status === "ready"
-    ? "Your 100-person simulated cohort is ready for a reel."
+    ? "Your audience profile is ready for a reel."
     : generation.status === "failed"
-      ? "We couldn’t finish building this audience cohort. Your Account DNA is still saved."
-      : "We’re turning your Account DNA into a stable simulated cohort. This usually takes a moment.";
+      ? "We couldn’t finish setting up your audience profile. Your details are still saved."
+      : "We’re getting your audience profile ready. This usually takes a moment.";
 
   return (
     <DashboardShell>
       <div className="space-y-10">
         <header className="max-w-3xl space-y-3">
           <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Decide what to test next.</h1>
-          <p className="max-w-2xl text-lg leading-8 text-muted-foreground">Use a saved audience model to examine a draft reel. The result is simulated guidance; your publishing decision remains yours.</p>
+          <p className="max-w-2xl text-lg leading-8 text-muted-foreground">Review a draft reel with your saved audience details and get clear ideas for your next edit.</p>
         </header>
 
         <section aria-labelledby="cohort-status-heading" className="grid gap-6 border border-foreground bg-card p-6 shadow-[var(--shadow-action)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="space-y-3">
-            <p className="text-sm font-medium">Audience cohort</p>
+            <p className="text-sm font-medium">Your audience</p>
             <h2 className="text-2xl font-semibold tracking-tight" id="cohort-status-heading">{account.niche}</h2>
             <p className="max-w-2xl leading-7 text-muted-foreground">{statusCopy}</p>
             <CohortStatus account={account} />
@@ -82,11 +82,11 @@ export function DashboardHome() {
             <Button aria-describedby="analyze-unavailable" disabled size="lg">Analyze a reel</Button>
           )}
         </section>
-        {!canAnalyze ? <p className="-mt-6 text-sm text-muted-foreground" id="analyze-unavailable">Analysis becomes available after this cohort is ready.</p> : null}
+        {!canAnalyze ? <p className="-mt-6 text-sm text-muted-foreground" id="analyze-unavailable">You can review a reel once your audience profile is ready.</p> : null}
 
         <section aria-labelledby="recent-analyses-heading" className="space-y-5">
           <div className="flex items-end justify-between gap-4">
-            <div className="space-y-2"><h2 className="text-2xl font-semibold tracking-tight" id="recent-analyses-heading">Recent analyses</h2><p className="text-muted-foreground">Each report keeps the simulated cohort context it was created with.</p></div>
+            <div className="space-y-2"><h2 className="text-2xl font-semibold tracking-tight" id="recent-analyses-heading">Recent reviews</h2><p className="text-muted-foreground">Each report keeps the audience details used for that review.</p></div>
             <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:inline-flex")} href="/reports">All reports</Link>
           </div>
           <ReportList limit={5} />
@@ -97,10 +97,10 @@ export function DashboardHome() {
 }
 
 function CohortStatus({ account }: { account: { generation: { status: "pending" | "ready" | "failed"; error: string | null }; cohort: { inTargetCount: number; adjacentCount: number } } }) {
-  const { generation, cohort } = account;
-  if (generation.status === "ready") return <p className="inline-flex w-fit items-center gap-2 rounded-full border border-[var(--verified-edge)] bg-[var(--verified-wash)] px-3 py-1.5 text-sm font-medium">Ready · {cohort.inTargetCount} in target, {cohort.adjacentCount} adjacent</p>;
-  if (generation.status === "failed") return <p className="text-sm font-medium text-destructive">Generation failed. {generation.error}</p>;
-  return <p className="text-sm font-medium">Generating cohort…</p>;
+  const { generation } = account;
+  if (generation.status === "ready") return <p className="inline-flex w-fit items-center gap-2 rounded-full border border-[var(--verified-edge)] bg-[var(--verified-wash)] px-3 py-1.5 text-sm font-medium">Ready to review</p>;
+  if (generation.status === "failed") return <p className="text-sm font-medium text-destructive">Setup needs another try.</p>;
+  return <p className="text-sm font-medium">Getting your audience profile ready…</p>;
 }
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -196,4 +196,4 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardSkeleton() { return <div className="max-w-3xl space-y-6" aria-label="Loading creator home"><div className="h-12 w-3/4 animate-pulse bg-card" /><div className="h-52 animate-pulse border border-border bg-card" /></div>; }
-function EmptyAccountState() { return <section className="max-w-2xl space-y-5"><h1 className="text-4xl font-semibold tracking-tight">Start with your audience record.</h1><p className="text-lg leading-8 text-muted-foreground">Account DNA gives each simulation a stable context. You can update it later when your audience focus changes.</p><Link className={buttonVariants({ size: "lg" })} href="/onboarding">Create Account DNA</Link></section>; }
+function EmptyAccountState() { return <section className="max-w-2xl space-y-5"><h1 className="text-4xl font-semibold tracking-tight">Start with your audience.</h1><p className="text-lg leading-8 text-muted-foreground">Tell us who you want to reach so every reel review feels relevant. You can update it whenever your focus changes.</p><Link className={buttonVariants({ size: "lg" })} href="/onboarding">Set up my audience</Link></section>; }

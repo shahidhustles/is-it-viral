@@ -56,14 +56,6 @@ type AudienceLedgerProps = {
   onRetry: () => void;
 };
 
-const traitLabels = [
-  ["Open", "openness"],
-  ["Conscientious", "conscientiousness"],
-  ["Extraverted", "extraversion"],
-  ["Agreeable", "agreeableness"],
-  ["Sensitive", "neuroticism"],
-] as const;
-
 export function AudienceLedger({ account, isRetrying, retryError, onEdit, onRetry }: AudienceLedgerProps) {
   if (account.generation.status === "pending") {
     return <CohortBuildingState account={account} onEdit={onEdit} />;
@@ -90,23 +82,23 @@ function ReadyAudienceLedger({ account, onEdit }: Pick<AudienceLedgerProps, "acc
       <header className="max-w-3xl space-y-3">
         <p className="flex items-center gap-2 text-sm font-medium text-foreground">
           <Check aria-hidden="true" className="size-4" />
-          Audience cohort ready
+          Audience profile ready
         </p>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl" id="audience-heading">
-          Your simulated audience, on record.
+          Your audience is ready.
         </h1>
         <p className="text-lg leading-8 text-muted-foreground">
-          These 100 personas are a stable model built from your Account DNA. They help assess audience fit; they are not real followers or a prediction of platform reach.
+          Your saved details are ready to guide your reel reviews. They help you make better edits, not predict reach.
         </p>
         <Link className={buttonVariants({ size: "lg" })} href="/analyze">Analyze a reel</Link>
       </header>
 
-      <CohortComposition account={account} />
+      <CohortComposition />
 
       <section aria-labelledby="archetypes-heading" className="space-y-5">
         <div className="max-w-3xl space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight" id="archetypes-heading">The people represented in this cohort.</h2>
-          <p className="text-muted-foreground">Open an archetype to inspect the ten simulated personas it represents.</p>
+          <h2 className="text-2xl font-semibold tracking-tight" id="archetypes-heading">A closer look at your audience.</h2>
+          <p className="text-muted-foreground">Open a group to see the interests and traits that shape the feedback.</p>
         </div>
         <div className="grid items-start gap-4 lg:grid-cols-2">
           {account.archetypes.map((archetype) => (
@@ -120,23 +112,23 @@ function ReadyAudienceLedger({ account, onEdit }: Pick<AudienceLedgerProps, "acc
   );
 }
 
-function CohortComposition({ account }: Pick<AudienceLedgerProps, "account">) {
+function CohortComposition() {
   return (
     <section aria-labelledby="cohort-composition-heading" className="border border-foreground bg-card p-6 shadow-[var(--shadow-action)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight" id="cohort-composition-heading">{account.cohort.personaCount} simulated personas, built from your Account DNA.</h2>
-          <p className="leading-7 text-muted-foreground">Seven in-target archetypes anchor the cohort. Three adjacent archetypes make room for nearby interest and discovery.</p>
+          <h2 className="text-2xl font-semibold tracking-tight" id="cohort-composition-heading">Your feedback is built around the people you want to reach.</h2>
+          <p className="leading-7 text-muted-foreground">It considers your core audience and people who may discover your content through shared interests.</p>
         </div>
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[var(--verified-edge)] bg-[var(--verified-wash)] px-3 py-1.5 text-sm font-medium">
           <Users aria-hidden="true" className="size-4" />
-          Stable cohort
+          Ready to review
         </span>
       </div>
       <dl className="mt-6 grid divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-        <CompositionMeasure label="In target" value="7 archetypes · 70 personas" />
-        <CompositionMeasure label="Adjacent" value="3 archetypes · 30 personas" />
-        <CompositionMeasure label="Archetypes" value={`${account.cohort.archetypeCount} profiles`} />
+        <CompositionMeasure label="Core audience" value="People you want to reach" />
+        <CompositionMeasure label="Wider interest" value="People likely to discover it" />
+        <CompositionMeasure label="Audience view" value="Built for your content" />
       </dl>
     </section>
   );
@@ -152,16 +144,15 @@ function CompositionMeasure({ label, value }: { label: string; value: string }) 
 }
 
 function ArchetypeDisclosure({ archetype }: { archetype: Archetype }) {
-  const segmentLabel = archetype.audienceSegment === "inTarget" ? "In target" : "Adjacent";
+  const segmentLabel = archetype.audienceSegment === "inTarget" ? "Core audience" : "Wider interest";
 
   return (
     <details className="group border border-border bg-card open:border-foreground">
       <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 p-5 focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden">
         <span className="space-y-1">
           <span className="block font-semibold tracking-tight">{archetype.name}</span>
-          <span className="block text-sm text-muted-foreground">10 simulated personas</span>
+          <span className="block text-sm text-muted-foreground">Audience group</span>
           <span className="block max-w-72 truncate text-sm text-muted-foreground">{archetype.interests.join(" · ")}</span>
-          <TraitFingerprint ocean={archetype.ocean} />
         </span>
         <span className="flex items-center gap-3">
           <span className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium">{segmentLabel}</span>
@@ -173,78 +164,8 @@ function ArchetypeDisclosure({ archetype }: { archetype: Archetype }) {
           <h3 className="font-medium">Shared interests</h3>
           <p className="text-sm leading-6 text-muted-foreground">{archetype.interests.join(" · ")}</p>
         </div>
-        <div className="space-y-3">
-          <h3 className="font-medium">Trait profile</h3>
-          <TraitProfile ocean={archetype.ocean} />
-        </div>
-        <TraitRanges personas={archetype.personas} />
-        <PersonaList personas={archetype.personas} />
       </div>
     </details>
-  );
-}
-
-function TraitProfile({ ocean }: { ocean: Archetype["ocean"] }) {
-  return (
-    <dl className="grid grid-cols-5 gap-2">
-      {traitLabels.map(([label, trait]) => <TraitMeasure key={trait} label={label} value={ocean[trait]} />)}
-    </dl>
-  );
-}
-
-function TraitFingerprint({ ocean }: { ocean: Archetype["ocean"] }) {
-  const profile = traitLabels
-    .map(([label, trait]) => `${label} ${Math.round(ocean[trait] * 100)}`)
-    .join(" · ");
-
-  return (
-    <span aria-label={`Trait profile: ${profile}`} className="block text-xs text-muted-foreground">
-      {profile}
-    </span>
-  );
-}
-
-function TraitRanges({ personas }: { personas: Archetype["personas"] }) {
-  return (
-    <div className="space-y-3">
-      <h3 className="font-medium">Variation across the ten personas</h3>
-      <dl className="grid grid-cols-5 gap-2">
-        {traitLabels.map(([label, trait]) => {
-          const values = personas.map((persona) => persona.ocean[trait]);
-          const range = values.length === 0
-            ? "—"
-            : `${Math.round(Math.min(...values) * 100)}–${Math.round(Math.max(...values) * 100)}`;
-
-          return <TraitMeasure key={trait} label={label} value={range} />;
-        })}
-      </dl>
-    </div>
-  );
-}
-
-function PersonaList({ personas }: { personas: Archetype["personas"] }) {
-  return (
-    <div className="space-y-3 border-t border-border pt-4">
-      <h3 className="font-medium">The ten personas represented</h3>
-      <ol className="grid gap-2 sm:grid-cols-2">
-        {personas.map((persona) => (
-          <li className="flex items-center justify-between gap-3 border border-border bg-background px-3 py-2 text-sm" key={persona.personaIndex}>
-            <span>Persona {String(persona.personaIndex + 1).padStart(2, "0")}</span>
-            <span className="text-muted-foreground">{persona.connectionCount} local links</span>
-          </li>
-        ))}
-      </ol>
-      <p className="text-sm leading-6 text-muted-foreground">Each variation is connected to nearby personas in the cohort. Those links are used when a reel simulation runs.</p>
-    </div>
-  );
-}
-
-function TraitMeasure({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="space-y-1">
-      <dt className="text-xs leading-4 text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium">{typeof value === "number" ? Math.round(value * 100) : value}</dd>
-    </div>
   );
 }
 
@@ -252,9 +173,9 @@ function CohortBuildingState({ account, onEdit }: Pick<AudienceLedgerProps, "acc
   return (
     <section aria-labelledby="audience-heading" className="max-w-3xl space-y-8">
       <div className="space-y-3">
-        <p className="font-medium">Building your audience cohort</p>
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl" id="audience-heading">Your Account DNA is saved.</h1>
-        <p className="text-lg leading-8 text-muted-foreground">We’re creating the ten archetypes and 100 connected simulated personas for this audience. You can review the saved record while it is prepared.</p>
+        <p className="font-medium">Preparing your audience</p>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl" id="audience-heading">Your audience details are saved.</h1>
+        <p className="text-lg leading-8 text-muted-foreground">We’re getting your audience profile ready for reel reviews. You can still review or update your details.</p>
       </div>
       <AccountDnaRecord account={account} onEdit={onEdit} />
     </section>
@@ -265,18 +186,18 @@ function CohortFailureState({ account, isRetrying, retryError, onEdit, onRetry }
   return (
     <section aria-labelledby="audience-heading" className="max-w-3xl space-y-8">
       <div className="space-y-3">
-        <p className="font-medium text-destructive">Cohort generation needs another try</p>
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl" id="audience-heading">Your Account DNA is still saved.</h1>
-        <p className="text-lg leading-8 text-muted-foreground">We could not finish building its audience cohort. Retry the generation or update the record before trying again.</p>
+        <p className="font-medium text-destructive">Your audience needs another try</p>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl" id="audience-heading">Your audience details are still saved.</h1>
+        <p className="text-lg leading-8 text-muted-foreground">We could not finish preparing your audience profile. Try again or update your details.</p>
       </div>
       <div className="border border-destructive bg-destructive/10 p-5" role="alert">
-        <p className="font-medium">The cohort was not generated.</p>
-        <p className="mt-1 text-sm leading-6">{account.generation.error ?? "Please try generation again."}</p>
+        <p className="font-medium">Your audience profile is not ready yet.</p>
+        <p className="mt-1 text-sm leading-6">Please try again.</p>
         {retryError ? <p className="mt-3 text-sm leading-6">{retryError}</p> : null}
       </div>
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Button disabled={isRetrying} onClick={onRetry} size="lg">{isRetrying ? "Retrying generation…" : "Retry generation"}</Button>
-        <Button disabled={isRetrying} onClick={onEdit} size="lg" variant="outline">Edit Account DNA</Button>
+        <Button disabled={isRetrying} onClick={onRetry} size="lg">{isRetrying ? "Trying again…" : "Try again"}</Button>
+        <Button disabled={isRetrying} onClick={onEdit} size="lg" variant="outline">Edit audience details</Button>
       </div>
       <AccountDnaRecord account={account} onEdit={onEdit} />
     </section>

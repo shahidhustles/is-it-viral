@@ -20,9 +20,9 @@ export function ReportList({ limit }: ReportListProps) {
   if (visibleReports.length === 0) {
     return (
       <div className="border-y border-border py-10 text-center">
-        <p className="font-medium">No reel analyses yet.</p>
+        <p className="font-medium">No reel reviews yet.</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          When your cohort is ready, analyze a draft to create the first report.
+          Once your audience profile is ready, review a draft to get your first report.
         </p>
       </div>
     );
@@ -37,15 +37,15 @@ export function ReportList({ limit }: ReportListProps) {
         >
           <div className="grid gap-4 sm:grid-cols-4 sm:items-center">
             <div>
-              <p className="font-semibold">Reel analysis</p>
+              <p className="font-semibold">Reel review</p>
               <p className="mt-1 text-sm text-muted-foreground">{formatDate(report.createdAt)}</p>
             </div>
-            <ReportValue label="Verdict" value={report.verdict} />
-            <ReportValue label="Simulated reach" value={String(report.metrics.totalReach)} />
-            <ReportValue label="Share rate" value={formatPercent(report.metrics.simulatedShareRate)} />
+            <ReportValue label="Takeaway" value={formatVerdict(report.verdict)} />
+            <ReportValue label="Audience response" value={String(report.metrics.totalReach)} />
+            <ReportValue label="Share interest" value={formatPercent(report.metrics.simulatedShareRate)} />
           </div>
           <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/analyses/${report._id}`}>
-            View report
+            View feedback
           </Link>
         </li>
       ))}
@@ -77,4 +77,12 @@ function formatDate(timestamp: number) {
 
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+function formatVerdict(verdict: string) {
+  if (verdict === "Breakout potential") return "Strong response";
+  if (verdict === "Strong in target") return "Strong audience fit";
+  if (verdict === "Mixed signal") return "Worth refining";
+  if (verdict === "Stops early") return "Needs a stronger opening";
+  return verdict;
 }

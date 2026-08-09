@@ -37,9 +37,9 @@ describe("landing page primary action", () => {
   });
 
   it("keeps the advisory boundary in user-visible landing copy", () => {
-    expect(advisoryDisclosure).toContain("simulated second opinion");
-    expect(advisoryDisclosure).toContain("cannot promise performance");
-    expect(advisoryDisclosure).toContain("predict Instagram’s private ranking system");
+    expect(advisoryDisclosure).toContain("private second opinion");
+    expect(advisoryDisclosure).toContain("cannot promise results");
+    expect(advisoryDisclosure).toContain("predict Instagram’s ranking system");
     expect(advisoryDisclosure).toContain("You decide what to make and whether to post it");
   });
 });

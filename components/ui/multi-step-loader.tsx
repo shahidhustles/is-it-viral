@@ -44,7 +44,7 @@ export function MultiStepLoader({ loading, loadingStates, value, title }: MultiS
           >
             <div className="border-b border-border pb-6">
               <h2 className="text-2xl font-semibold tracking-tight" id="analysis-progress-title">{title}</h2>
-              <p className="mt-2 max-w-md leading-7 text-muted-foreground">Keep this page open while we prepare the saved simulation. Your publishing decision remains yours.</p>
+              <p className="mt-2 max-w-md leading-7 text-muted-foreground">Keep this page open while we prepare your feedback. You decide what to post.</p>
             </div>
 
             <ol className="mt-6 space-y-1" aria-label="Analysis progress">

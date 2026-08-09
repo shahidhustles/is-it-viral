@@ -12,11 +12,11 @@ import type { Id } from "@/convex/_generated/dataModel";
 
 const MAX_DURATION_SECONDS = 30;
 const analysisLoadingStates: LoadingState[] = [
-  { text: "Preparing your reel", detail: "Checking duration and sampling one visual frame per second." },
-  { text: "Saving your reel", detail: "Securing the reel, audio track, and visual samples in your workspace." },
-  { text: "Starting the assessment", detail: "Linking this reel to your saved audience cohort." },
-  { text: "Transcribing audio", detail: "Reading the spoken message so it informs the Video DNA." },
-  { text: "Building Video DNA", detail: "Assessing the reel’s content signals before the deterministic cohort simulation." },
+  { text: "Preparing your reel", detail: "Checking that your reel is ready for review." },
+  { text: "Saving your reel", detail: "Saving your reel securely in your workspace." },
+  { text: "Starting your review", detail: "Using the audience details you saved." },
+  { text: "Reviewing the audio", detail: "Reading the spoken message in your reel." },
+  { text: "Finding what to improve", detail: "Looking for clear, useful feedback on your reel." },
 ];
 
 type UploadPhase = "idle" | "preparing" | "uploading" | "queued";
@@ -49,7 +49,7 @@ export function ReelAnalysisWorkspace() {
       setPhase("preparing");
       const prepared = await prepareReel(file);
       if (prepared.durationSeconds > MAX_DURATION_SECONDS) {
-        setError("This reel is over 30 seconds. Trim it, then upload it again.");
+        setError("This reel is too long. Trim it, then upload it again.");
         setPhase("idle");
         return;
       }
@@ -96,13 +96,13 @@ export function ReelAnalysisWorkspace() {
       <MultiStepLoader loading={displayedPhase !== "idle"} loadingStates={analysisLoadingStates} title="Reading the signal" value={analysisProgressIndex(displayedPhase, upload?.status)} />
       <header className="max-w-2xl space-y-3">
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Analyze a reel</h1>
-        <p className="text-lg leading-8 text-muted-foreground">Upload a draft of 30 seconds or less. We’ll sample each second, transcribe the audio, and test its Video DNA against your saved audience cohort.</p>
+        <p className="text-lg leading-8 text-muted-foreground">Upload a short draft. We’ll review what people see and hear, then give you feedback shaped around your audience.</p>
       </header>
 
       {displayedPhase === "idle" ? (
         <section className="border border-foreground bg-card p-8" aria-labelledby="reel-upload-heading">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4"><span className="grid size-12 place-items-center border border-foreground bg-background"><FileVideo aria-hidden="true" className="size-6" /></span><div className="space-y-1"><h2 className="text-lg font-semibold" id="reel-upload-heading">Choose your reel</h2><p className="max-w-xl leading-7 text-muted-foreground">MP4, MOV, or another browser-supported video. Keep it at 30 seconds or less.</p></div></div>
+            <div className="flex items-start gap-4"><span className="grid size-12 place-items-center border border-foreground bg-background"><FileVideo aria-hidden="true" className="size-6" /></span><div className="space-y-1"><h2 className="text-lg font-semibold" id="reel-upload-heading">Choose your reel</h2><p className="max-w-xl leading-7 text-muted-foreground">Upload an MP4, MOV, or another video your browser supports. Keep it short and focused.</p></div></div>
             <div className="flex flex-col gap-3 sm:items-end">
               <label className="group inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2" htmlFor={inputId}>
                 <input accept="video/*" className="sr-only" id={inputId} onChange={(event) => void handleFile(event.target.files?.[0])} type="file" />
@@ -118,8 +118,8 @@ export function ReelAnalysisWorkspace() {
 
       {error ?? failedUploadError ? <AnalysisNotice message={error ?? failedUploadError ?? ""} /> : null}
       <section aria-labelledby="analysis-method" className="grid gap-6 border-y border-border py-8 md:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="space-y-2"><h2 className="text-2xl font-semibold tracking-tight" id="analysis-method">What the assessment uses</h2><p className="max-w-2xl leading-7 text-muted-foreground">Visual frames, spoken audio, and your saved cohort all inform this report. The outcome is simulated guidance, not a prediction of Instagram’s private ranking system.</p></div>
-        <ul className="space-y-2 text-sm leading-6 text-muted-foreground"><li>One visual sample per second</li><li>Full audio transcript</li><li>Saved deterministic cohort</li></ul>
+        <div className="space-y-2"><h2 className="text-2xl font-semibold tracking-tight" id="analysis-method">What your review looks at</h2><p className="max-w-2xl leading-7 text-muted-foreground">Your visuals, spoken words, and audience details all shape this feedback. It helps you make an editing decision; it does not predict Instagram results.</p></div>
+        <ul className="space-y-2 text-sm leading-6 text-muted-foreground"><li>What people see</li><li>What they hear</li><li>Who you want to reach</li></ul>
       </section>
     </div>
   );

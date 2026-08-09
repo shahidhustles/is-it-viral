@@ -103,7 +103,7 @@ export function LandingPage() {
               See how your audience could <em className="font-[family-name:var(--font-interpretation)] font-medium italic tracking-[-0.04em]"><TextAnimate text="react" type="calmInUp" /></em> before you post.
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              Your draft reel gets a private, simulated first audience. See how they could respond, then decide what to tighten before you post.
+              Get a private preview of how your audience may respond, then decide what to tighten before you post.
             </p>
             <div className="mt-9 max-w-md space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">

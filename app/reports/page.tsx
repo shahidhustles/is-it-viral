@@ -13,7 +13,7 @@ export default async function ReportsPage() {
         <header className="max-w-2xl space-y-4">
           <h1 className="text-4xl font-semibold tracking-tight">Reports</h1>
           <p className="text-lg leading-8 text-muted-foreground">
-            Your completed reel analyses, each retaining the simulated cohort used for its outcome.
+            Your completed reel reviews, each saved with the audience details used for the feedback.
           </p>
         </header>
         <ReportList />

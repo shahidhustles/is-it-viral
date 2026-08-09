@@ -109,21 +109,21 @@ export function ContagionReplay({ personas, connections, events, cascadeDepth }:
     <section aria-labelledby="contagion-replay-heading" className="space-y-5 border-y border-border py-8">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
         <div className="max-w-2xl space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight" id="contagion-replay-heading">Replay the simulated contagion</h2>
-          <p className="text-muted-foreground">Each pass reveals saved exposures from this cohort. Solid links are direct shares; dotted links are fit-based recommendations in this simulation, not Instagram ranking data.</p>
+          <h2 className="text-2xl font-semibold tracking-tight" id="contagion-replay-heading">See how interest may spread</h2>
+          <p className="text-muted-foreground">Follow the path from first view to possible shares and new viewers. This is a private preview, not Instagram ranking data.</p>
         </div>
-        <p className="text-sm leading-6 text-muted-foreground">Select a persona to inspect its saved profile and computed response.</p>
+        <p className="text-sm leading-6 text-muted-foreground">Select a point to see what may have shaped the response.</p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="overflow-hidden border border-foreground bg-[var(--analysis-paper)]">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-foreground bg-background px-4 py-3">
-            <p aria-live="polite" className="text-sm font-medium">Pass {round} of {totalRounds}{round === totalRounds ? " · final saved state" : " · active"}</p>
+            <p aria-live="polite" className="text-sm font-medium">View {round} of {totalRounds}{round === totalRounds ? " · complete" : " · in progress"}</p>
             <div className="flex items-center gap-2">
               <Button aria-label="Restart replay" onClick={() => { setRound(1); setIsPlaying(true); }} size="icon-sm" variant="outline"><RotateCcw aria-hidden="true" /></Button>
               <Button aria-label="Previous pass" disabled={round === 1} onClick={() => moveToRound(round - 1)} size="icon-sm" variant="outline"><StepBack aria-hidden="true" /></Button>
               <Button aria-label={isPlaying ? "Pause replay" : "Play replay"} onClick={() => setIsPlaying((current) => !current)} size="sm" variant="outline">{isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}{isPlaying ? "Pause" : "Play"}</Button>
-              <Button aria-label="Next pass" disabled={round === totalRounds} onClick={() => moveToRound(round + 1)} size="icon-sm" variant="outline"><StepForward aria-hidden="true" /></Button>
+              <Button aria-label="Next view" disabled={round === totalRounds} onClick={() => moveToRound(round + 1)} size="icon-sm" variant="outline"><StepForward aria-hidden="true" /></Button>
             </div>
           </div>
           <div className="h-[34rem] min-h-100 sm:h-[38rem]">
@@ -153,7 +153,7 @@ export function ContagionReplay({ personas, connections, events, cascadeDepth }:
             <LegendItem className="border-foreground bg-[var(--verified-wash)]" label="Liked" />
             <LegendItem className="border-2 border-foreground bg-card" label="Commented" />
             <LegendItem className="border-foreground bg-[var(--signal-lime)]" label="Shared" />
-            <LegendItem className="border-dashed border-muted-foreground bg-background" label="Adjacent audience" />
+            <LegendItem className="border-dashed border-muted-foreground bg-background" label="New viewers" />
           </div>
         </div>
         <PersonaDetail persona={selectedPersona} state={selectedState} />
@@ -169,7 +169,7 @@ function PersonaNode({ data }: NodeProps<Node<PersonaNodeData>>) {
     <>
       <Handle className="!pointer-events-none !h-px !w-px !border-0 !opacity-0" position={Position.Top} type="target" />
       <div
-        aria-label={`Persona ${persona.personaIndex + 1}, ${persona.audienceSegment === "inTarget" ? "in target" : "adjacent"}${state.exposure ? `, exposed in pass ${state.exposure.round}` : ", unexposed"}${action ? `, ${action}` : ""}`}
+        aria-label={`Audience member, ${persona.audienceSegment === "inTarget" ? "core audience" : "new viewer"}${state.exposure ? ", viewed" : ", not reached"}${action ? `, ${action}` : ""}`}
         className={cn(
           "flex size-10 items-center justify-center rounded-full border bg-background text-xs font-semibold tabular-nums transition-[transform,background-color,box-shadow] motion-reduce:transition-none",
           persona.audienceSegment === "adjacent" && "border-dashed border-muted-foreground",
@@ -183,7 +183,7 @@ function PersonaNode({ data }: NodeProps<Node<PersonaNodeData>>) {
           selected && "ring-2 ring-foreground ring-offset-2",
           action === "shared" && !state.isActive && "bg-[var(--signal-lime)]",
         )}
-        title={`Persona ${persona.personaIndex + 1}`}
+        title="Audience member"
       >
         {String(persona.personaIndex + 1).padStart(2, "0")}
       </div>
@@ -193,29 +193,27 @@ function PersonaNode({ data }: NodeProps<Node<PersonaNodeData>>) {
 }
 
 function RecommendationNode({ data }: NodeProps<Node<RecommendationNodeData>>) {
-  return <div className="max-w-32 border border-dashed border-muted-foreground bg-background px-2 py-1 text-center text-xs leading-3 text-muted-foreground">Fit-based route<br />pass {data.round}</div>;
+  return <div className="max-w-32 border border-dashed border-muted-foreground bg-background px-2 py-1 text-center text-xs leading-3 text-muted-foreground">Possible discovery<br />view {data.round}</div>;
 }
 
 function PersonaDetail({ persona, state }: { persona: GraphPersona | null; state: ReturnType<typeof getPersonaReplayState> | null }) {
   if (!persona || !state) {
-    return <aside aria-label="Persona details" className="border border-border bg-background p-5"><h3 className="font-semibold">Persona inspection</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">Select any numbered node to see the saved profile, exposure source, and computed response for that simulated cohort member.</p></aside>;
+    return <aside aria-label="Audience details" className="border border-border bg-background p-5"><h3 className="font-semibold">Audience details</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">Select a point to see the interests and response behind this preview.</p></aside>;
   }
 
   const action = getPersonaAction(state.reaction);
   return (
-    <aside aria-label={`Persona ${persona.personaIndex + 1} details`} className="border border-foreground bg-background p-5">
-      <p className="text-sm font-medium text-muted-foreground">Persona {String(persona.personaIndex + 1).padStart(2, "0")} · {persona.audienceSegment === "inTarget" ? "In target" : "Adjacent"}</p>
-      <h3 className="mt-2 text-xl font-semibold tracking-tight">Saved cohort profile</h3>
+    <aside aria-label="Audience member details" className="border border-foreground bg-background p-5">
+      <p className="text-sm font-medium text-muted-foreground">{persona.audienceSegment === "inTarget" ? "Core audience" : "New viewer"}</p>
+      <h3 className="mt-2 text-xl font-semibold tracking-tight">Audience details</h3>
       <dl className="mt-5 space-y-4 text-sm">
         <DetailRow label="Interests" value={persona.interests.slice(0, 3).join(", ")} />
-        <DetailRow label="Exposure" value={state.exposure ? `Pass ${state.exposure.round} · ${formatSource(state.exposure.source)}` : "Not exposed in this saved result"} />
-        <DetailRow label="Action" value={action ? formatAction(action) : "Not captured for this saved event"} />
-        <DetailRow label="Watched" value={state.reaction?.watchCompletion !== undefined ? `${Math.round(state.reaction.watchCompletion * 100)}% completion` : "Not captured"} />
-        <DetailRow label="Engagement score" value={state.reaction?.score !== null && state.reaction?.score !== undefined ? `${Math.round(state.reaction.score * 100)}%` : "Not captured"} />
+        <DetailRow label="How they found it" value={state.exposure ? formatSource(state.exposure.source) : "Not reached in this preview"} />
+        <DetailRow label="Response" value={action ? formatAction(action) : "No response recorded"} />
+        <DetailRow label="Watched" value={state.reaction?.watchCompletion !== undefined ? `${Math.round(state.reaction.watchCompletion * 100)}% watched` : "No watch data"} />
       </dl>
-      <div className="mt-5 border-t border-border pt-4"><p className="text-sm font-medium">Computed rationale</p><p className="mt-1 text-sm leading-6 text-muted-foreground">{state.reaction?.rationale ?? "This older saved event does not include a persisted rationale."}</p></div>
-      {state.reaction?.action === "commented" && state.reaction.comment ? <div className="mt-4 border border-border bg-card p-3"><p className="text-xs font-medium text-muted-foreground">Simulated comment</p><p className="mt-1 text-sm leading-6">“{state.reaction.comment}”</p></div> : null}
-      <div className="mt-5 border-t border-border pt-4"><p className="text-sm font-medium">OCEAN traits</p><dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">{Object.entries(persona.ocean).map(([trait, value]) => <div className="flex justify-between gap-2" key={trait}><dt className="capitalize">{trait}</dt><dd>{Math.round(value * 100)}%</dd></div>)}</dl></div>
+      <div className="mt-5 border-t border-border pt-4"><p className="text-sm font-medium">Why this may happen</p><p className="mt-1 text-sm leading-6 text-muted-foreground">{state.reaction?.rationale ?? "No extra detail is available for this saved result."}</p></div>
+      {state.reaction?.action === "commented" && state.reaction.comment ? <div className="mt-4 border border-border bg-card p-3"><p className="text-xs font-medium text-muted-foreground">Possible comment</p><p className="mt-1 text-sm leading-6">“{state.reaction.comment}”</p></div> : null}
     </aside>
   );
 }
@@ -229,9 +227,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 function formatSource(source: GraphEvent["source"]) {
-  if (source === "seed") return "first-pass seed";
+  if (source === "seed") return "first look";
   if (source === "share") return "direct share";
-  if (source === "recommendation") return "fit-based recommendation";
+  if (source === "recommendation") return "possible discovery";
   return "not recorded";
 }
 

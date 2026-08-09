@@ -14,8 +14,8 @@ export function AccountDnaRecord({ account, onEdit }: AccountDnaRecordProps) {
   return (
     <section aria-labelledby="account-dna-heading" className="max-w-3xl space-y-5 border-t border-border pt-8">
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight" id="account-dna-heading">Account DNA</h2>
-        <p className="text-muted-foreground">This is the saved context that defines the cohort.</p>
+        <h2 className="text-2xl font-semibold tracking-tight" id="account-dna-heading">Your audience details</h2>
+        <p className="text-muted-foreground">These details help make your reel feedback relevant.</p>
       </div>
       <dl className="divide-y divide-border border-y border-border">
         <AccountDnaRecordRow label="Account focus" value={account.niche} />
@@ -23,7 +23,7 @@ export function AccountDnaRecord({ account, onEdit }: AccountDnaRecordProps) {
         <AccountDnaRecordRow label="Primary language" value={account.primaryLanguage} />
         <AccountDnaRecordRow label="Region" value={account.region} />
       </dl>
-      <Button onClick={onEdit} size="lg" variant="outline">Edit Account DNA</Button>
+      <Button onClick={onEdit} size="lg" variant="outline">Edit audience details</Button>
     </section>
   );
 }
