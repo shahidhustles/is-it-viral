@@ -96,7 +96,8 @@ export const saveAccountDna = mutation({
     }
 
     const revision = existing ? existing.revision + 1 : 1;
-    const cohort = generateCohort(input, cohortSeedFor(input, revision));
+    const cohortSeed = cohortSeedFor(input, revision);
+    const cohort = generateCohort(input, cohortSeed);
     const now = Date.now();
     const cohortSummary = {
       archetypeCount: cohort.archetypes.length,
@@ -112,7 +113,7 @@ export const saveAccountDna = mutation({
     const accountFields = {
       ownerTokenIdentifier: identity.tokenIdentifier,
       ...input,
-      cohortSeed: cohortSeedFor(input, revision),
+      cohortSeed,
       revision,
       ...cohortSummary,
       updatedAt: now,
