@@ -15,11 +15,11 @@ The creator needs to understand an honest, deterministic simulated-cohort verdic
 
 ## Content and constraints
 
-The completed report leads with the verdict, five simulated metrics, the saved cohort context, and a concise plain-language explanation that this does not reproduce or predict Instagram's private ranking system. It also covers loading, missing, unauthorized, and unavailable states.
+The completed report opens with a concise title, then the saved contagion replay, cohort outcome, prioritized edits, and saved Video DNA. The verdict belongs within the cohort outcome rather than the page header. It also covers loading, missing, unauthorized, and unavailable states.
 
 ## Chosen direction and memorable moment
 
-**The Signal Ledger:** a decisive report headline followed by a compact metric ledger, with a quieter evidence rail that makes the simulation method inspectable without making it necessary to understand the result. Lime only marks a creator action, never a result.
+**The Signal Ledger:** an inspectable progression from the saved contagion replay to outcomes, practical edits, and the underlying Video DNA. Lime only marks a creator action, never a result.
 
 ## Boundaries
 
