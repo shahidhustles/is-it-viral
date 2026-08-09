@@ -1,6 +1,14 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import { RedirectToSignIn } from "@clerk/nextjs";
+import {
+  Authenticated,
+  AuthLoading,
+  AuthRefreshing,
+  Unauthenticated,
+  useMutation,
+  useQuery,
+} from "convex/react";
 import { ArrowLeft, ArrowRight, Check, Fingerprint } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -51,6 +59,25 @@ const emptyForm: AccountDnaForm = {
 };
 
 export function AccountDnaOnboarding() {
+  return (
+    <>
+      <Authenticated>
+        <AuthenticatedAccountDnaOnboarding />
+      </Authenticated>
+      <AuthLoading>
+        <OnboardingLoadingState />
+      </AuthLoading>
+      <AuthRefreshing>
+        <OnboardingLoadingState />
+      </AuthRefreshing>
+      <Unauthenticated>
+        <RedirectToSignIn />
+      </Unauthenticated>
+    </>
+  );
+}
+
+function AuthenticatedAccountDnaOnboarding() {
   const router = useRouter();
   const savedAccountDna = useQuery(api.accountDna.getForCurrentOwner);
   const saveAccountDna = useMutation(api.accountDna.saveAccountDna);
