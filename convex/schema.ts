@@ -9,6 +9,12 @@ const oceanTraits = v.object({
   neuroticism: v.number(),
 });
 
+const cohortStatus = v.union(
+  v.literal("pending"),
+  v.literal("ready"),
+  v.literal("failed"),
+);
+
 export default defineSchema({
   accountDnas: defineTable({
     ownerTokenIdentifier: v.string(),
@@ -24,14 +30,37 @@ export default defineSchema({
     adjacentCount: v.number(),
     networkConnectionCount: v.number(),
     updatedAt: v.number(),
+    cohortStatus: v.optional(cohortStatus),
+    cohortError: v.optional(v.string()),
+    cohortGeneratedAt: v.optional(v.number()),
+    cohortModelId: v.optional(v.string()),
+    cohortReasoningEffort: v.optional(v.string()),
+    cohortPromptVersion: v.optional(v.string()),
+    cohortSchemaVersion: v.optional(v.string()),
   }).index("by_ownerTokenIdentifier", ["ownerTokenIdentifier"]),
+
+  cohortProvenance: defineTable({
+    accountDnaId: v.id("accountDnas"),
+    revision: v.number(),
+    status: cohortStatus,
+    error: v.optional(v.string()),
+    generatedAt: v.optional(v.number()),
+    modelId: v.optional(v.string()),
+    reasoningEffort: v.optional(v.string()),
+    promptVersion: v.optional(v.string()),
+    schemaVersion: v.optional(v.string()),
+  })
+    .index("by_accountDnaId", ["accountDnaId"])
+    .index("by_accountDnaId_and_revision", ["accountDnaId", "revision"]),
 
   cohortArchetypes: defineTable({
     accountDnaId: v.id("accountDnas"),
+    cohortRevision: v.optional(v.number()),
     archetypeIndex: v.number(),
     name: v.string(),
     audienceSegment: v.union(v.literal("inTarget"), v.literal("adjacent")),
     ocean: oceanTraits,
+    interests: v.array(v.string()),
   })
     .index("by_accountDnaId", ["accountDnaId"])
     .index("by_accountDnaId_and_archetypeIndex", [
@@ -41,6 +70,7 @@ export default defineSchema({
 
   cohortPersonas: defineTable({
     accountDnaId: v.id("accountDnas"),
+    cohortRevision: v.optional(v.number()),
     archetypeId: v.id("cohortArchetypes"),
     personaIndex: v.number(),
     audienceSegment: v.union(v.literal("inTarget"), v.literal("adjacent")),
@@ -58,6 +88,7 @@ export default defineSchema({
 
   cohortConnections: defineTable({
     accountDnaId: v.id("accountDnas"),
+    cohortRevision: v.optional(v.number()),
     fromPersonaId: v.id("cohortPersonas"),
     toPersonaId: v.id("cohortPersonas"),
   })

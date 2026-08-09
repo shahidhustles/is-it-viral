@@ -5,7 +5,7 @@ export type AccountDnaInput = {
   region: string;
 };
 
-type OceanTraits = {
+export type OceanTraits = {
   openness: number;
   conscientiousness: number;
   extraversion: number;
@@ -13,9 +13,16 @@ type OceanTraits = {
   neuroticism: number;
 };
 
-type AudienceSegment = "inTarget" | "adjacent";
+export type AudienceSegment = "inTarget" | "adjacent";
 
-type GeneratedArchetype = {
+export type CohortArchetype = {
+  name: string;
+  audienceSegment: AudienceSegment;
+  ocean: OceanTraits;
+  interests: string[];
+};
+
+type GeneratedArchetype = CohortArchetype & {
   archetypeIndex: number;
   name: string;
   audienceSegment: AudienceSegment;
@@ -44,60 +51,66 @@ export type GeneratedCohort = {
   connections: GeneratedConnection[];
 };
 
-const archetypeDefinitions: Array<{
-  name: string;
-  audienceSegment: AudienceSegment;
-  ocean: OceanTraits;
-}> = [
+const archetypeDefinitions: CohortArchetype[] = [
   {
     name: "Curious practitioner",
     audienceSegment: "inTarget",
     ocean: { openness: 0.78, conscientiousness: 0.62, extraversion: 0.48, agreeableness: 0.67, neuroticism: 0.38 },
+    interests: ["learning", "practical advice"],
   },
   {
     name: "Methodical improver",
     audienceSegment: "inTarget",
     ocean: { openness: 0.58, conscientiousness: 0.84, extraversion: 0.36, agreeableness: 0.61, neuroticism: 0.42 },
+    interests: ["systems", "habit building"],
   },
   {
     name: "Practical explorer",
     audienceSegment: "inTarget",
     ocean: { openness: 0.71, conscientiousness: 0.57, extraversion: 0.57, agreeableness: 0.58, neuroticism: 0.45 },
+    interests: ["experiments", "useful ideas"],
   },
   {
     name: "Reliable regular",
     audienceSegment: "inTarget",
     ocean: { openness: 0.43, conscientiousness: 0.76, extraversion: 0.41, agreeableness: 0.73, neuroticism: 0.34 },
+    interests: ["consistency", "reliable routines"],
   },
   {
     name: "Social learner",
     audienceSegment: "inTarget",
     ocean: { openness: 0.64, conscientiousness: 0.54, extraversion: 0.79, agreeableness: 0.72, neuroticism: 0.4 },
+    interests: ["community", "learning together"],
   },
   {
     name: "Sceptical optimizer",
     audienceSegment: "inTarget",
     ocean: { openness: 0.59, conscientiousness: 0.81, extraversion: 0.31, agreeableness: 0.43, neuroticism: 0.37 },
+    interests: ["evidence", "efficient choices"],
   },
   {
     name: "Purpose-led creator",
     audienceSegment: "inTarget",
     ocean: { openness: 0.84, conscientiousness: 0.59, extraversion: 0.65, agreeableness: 0.64, neuroticism: 0.46 },
+    interests: ["creative work", "purpose"],
   },
   {
     name: "Adjacent dabbler",
     audienceSegment: "adjacent",
     ocean: { openness: 0.69, conscientiousness: 0.41, extraversion: 0.54, agreeableness: 0.57, neuroticism: 0.49 },
+    interests: ["trying new things", "casual discovery"],
   },
   {
     name: "Broad-interest viewer",
     audienceSegment: "adjacent",
     ocean: { openness: 0.61, conscientiousness: 0.47, extraversion: 0.68, agreeableness: 0.63, neuroticism: 0.44 },
+    interests: ["popular culture", "quick inspiration"],
   },
   {
     name: "Casual connector",
     audienceSegment: "adjacent",
     ocean: { openness: 0.52, conscientiousness: 0.38, extraversion: 0.75, agreeableness: 0.69, neuroticism: 0.47 },
+    interests: ["sharing", "social connection"],
   },
 ];
 
@@ -115,12 +128,16 @@ export function cohortSeedFor(input: AccountDnaInput, revision: number) {
   )}-${revision}`;
 }
 
-export function generateCohort(input: AccountDnaInput, cohortSeed: string): GeneratedCohort {
+export function generateCohort(
+  input: AccountDnaInput,
+  cohortSeed: string,
+  definitions: CohortArchetype[] = archetypeDefinitions,
+): GeneratedCohort {
   const random = seededRandom(cohortSeed);
   const normalizedNiche = input.niche.trim().toLowerCase();
   const audiencePhrase = input.intendedAudience.trim().toLowerCase();
 
-  const archetypes = archetypeDefinitions.map((archetype, archetypeIndex) => ({
+  const archetypes = validateArchetypes(definitions).map((archetype, archetypeIndex) => ({
     ...archetype,
     archetypeIndex,
   }));
@@ -142,6 +159,7 @@ export function generateCohort(input: AccountDnaInput, cohortSeed: string): Gene
           audiencePhrase.slice(0, 72),
           input.primaryLanguage.trim().toLowerCase(),
           input.region.trim().toLowerCase(),
+          ...archetype.interests,
         ],
         sharingThreshold: round(0.35 + random() * 0.48),
         position: {
@@ -153,6 +171,37 @@ export function generateCohort(input: AccountDnaInput, cohortSeed: string): Gene
   );
 
   return { archetypes, personas, connections: generateConnections(personas.length) };
+}
+
+export function validateArchetypes(archetypes: CohortArchetype[]) {
+  if (archetypes.length !== 10) {
+    throw new Error("Cohort generation must return exactly 10 archetypes.");
+  }
+
+  const segments = archetypes.reduce(
+    (counts, archetype) => ({
+      inTarget: counts.inTarget + Number(archetype.audienceSegment === "inTarget"),
+      adjacent: counts.adjacent + Number(archetype.audienceSegment === "adjacent"),
+    }),
+    { inTarget: 0, adjacent: 0 },
+  );
+  if (segments.inTarget !== 7 || segments.adjacent !== 3) {
+    throw new Error("Cohort generation must contain 7 in-target and 3 adjacent archetypes.");
+  }
+
+  return archetypes.map((archetype) => {
+    const name = archetype.name.trim();
+    const interests = archetype.interests.map((interest) => interest.trim()).filter(Boolean);
+    if (!name || name.length > 80 || interests.length < 2 || interests.length > 5 || interests.some((interest) => interest.length > 80)) {
+      throw new Error("Cohort generation returned an invalid archetype profile.");
+    }
+    for (const value of Object.values(archetype.ocean)) {
+      if (!Number.isFinite(value) || value < 0 || value > 1) {
+        throw new Error("Cohort generation returned invalid OCEAN traits.");
+      }
+    }
+    return { ...archetype, name, interests };
+  });
 }
 
 function generateConnections(personaCount: number): GeneratedConnection[] {

@@ -76,10 +76,14 @@ export function AccountDnaOnboarding() {
               Account DNA saved
             </p>
             <h1 id="saved-account-dna-heading" className="text-4xl font-semibold tracking-tight md:text-5xl">
-              Your audience record is ready.
+              {savedAccountDna.generation.status === "ready" ? "Your audience record is ready." : "Your audience record is being prepared."}
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              This saved cohort will stay consistent across future reel assessments until you intentionally replace it.
+              {savedAccountDna.generation.status === "ready"
+                ? "This saved cohort will stay consistent across future reel assessments until you intentionally replace it."
+                : savedAccountDna.generation.status === "failed"
+                  ? "We could not build the cohort yet. Your Account DNA is still saved, and you can retry from Home."
+                  : "We’re building the stable simulated cohort for this audience. Reel analysis becomes available when it is ready."}
             </p>
           </div>
 

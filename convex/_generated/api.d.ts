@@ -10,6 +10,7 @@
 
 import type * as accountDna from "../accountDna.js";
 import type * as cohort from "../cohort.js";
+import type * as cohortGeneration from "../cohortGeneration.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   accountDna: typeof accountDna;
   cohort: typeof cohort;
+  cohortGeneration: typeof cohortGeneration;
 }>;
 
 /**

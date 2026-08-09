@@ -1,13 +1,13 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 
 const modules = import.meta.glob("./**/*.*s");
 
 describe("Account DNA onboarding", () => {
-  it("requires an owner and persists one complete, stable audience cohort", async () => {
+  it("requires an owner and persists a fixture-backed stable audience cohort", async () => {
     const t = convexTest(schema, modules);
     const input = {
       niche: "Independent fitness coaching",
@@ -28,7 +28,29 @@ describe("Account DNA onboarding", () => {
       subject: "user_123",
     });
 
-    await owner.mutation(api.accountDna.saveAccountDna, input);
+    const savedMutation = await owner.mutation(api.accountDna.saveAccountDna, input);
+
+    const pending = await owner.query(api.accountDna.getForCurrentOwner);
+    expect(pending).toMatchObject({
+      niche: input.niche,
+      intendedAudience: input.intendedAudience,
+      primaryLanguage: input.primaryLanguage,
+      region: input.region,
+      cohort: {
+        archetypeCount: 0,
+      },
+      generation: { status: "pending" },
+    });
+
+    await t.mutation(internal.accountDna.completeCohortGeneration, {
+      accountDnaId: savedMutation.accountDnaId,
+      revision: 1,
+      archetypes: archetypeFixture,
+      modelId: "test-model",
+      reasoningEffort: "medium",
+      promptVersion: "test-prompt-v1",
+      schemaVersion: "test-schema-v1",
+    });
 
     const saved = await owner.query(api.accountDna.getForCurrentOwner);
     expect(saved).toMatchObject({
@@ -36,12 +58,8 @@ describe("Account DNA onboarding", () => {
       intendedAudience: input.intendedAudience,
       primaryLanguage: input.primaryLanguage,
       region: input.region,
-      cohort: {
-        archetypeCount: 10,
-        personaCount: 100,
-        inTargetCount: 70,
-        adjacentCount: 30,
-      },
+      cohort: { archetypeCount: 10, personaCount: 100, inTargetCount: 70, adjacentCount: 30 },
+      generation: { status: "ready", provenance: { modelId: "test-model", reasoningEffort: "medium" } },
     });
     expect(saved?.cohort.networkConnectionCount).toBeGreaterThan(0);
 
@@ -57,7 +75,7 @@ describe("Account DNA onboarding", () => {
         throw new Error("Expected Account DNA to be persisted.");
       }
 
-      const [archetypes, personas, connections] = await Promise.all([
+      const [archetypes, personas, connections, provenance] = await Promise.all([
         ctx.db
           .query("cohortArchetypes")
           .withIndex("by_accountDnaId", (q) => q.eq("accountDnaId", account._id))
@@ -70,9 +88,15 @@ describe("Account DNA onboarding", () => {
           .query("cohortConnections")
           .withIndex("by_accountDnaId", (q) => q.eq("accountDnaId", account._id))
           .take(300),
+        ctx.db
+          .query("cohortProvenance")
+          .withIndex("by_accountDnaId_and_revision", (q) =>
+            q.eq("accountDnaId", account._id).eq("revision", 1),
+          )
+          .unique(),
       ]);
 
-      return { archetypes, personas, connections };
+      return { archetypes, personas, connections, provenance };
     });
 
     expect(persistedCohort.archetypes).toHaveLength(10);
@@ -83,6 +107,12 @@ describe("Account DNA onboarding", () => {
       ),
     ).toHaveLength(70);
     expect(persistedCohort.connections.length).toBeGreaterThan(0);
+    expect(persistedCohort.provenance).toMatchObject({
+      status: "ready",
+      modelId: "test-model",
+      promptVersion: "test-prompt-v1",
+      schemaVersion: "test-schema-v1",
+    });
 
     const reopened = await owner.query(api.accountDna.getForCurrentOwner);
     expect(reopened).toEqual(saved);
@@ -102,11 +132,32 @@ describe("Account DNA onboarding", () => {
       niche: "Strength training for new parents",
       revision: 2,
       cohort: {
-        archetypeCount: 10,
-        personaCount: 100,
-        inTargetCount: 70,
-        adjacentCount: 30,
+        archetypeCount: 0,
       },
+      generation: { status: "pending" },
     });
   });
+
+  it("keeps Account DNA after a failed generation and only lets its owner retry", async () => {
+    const t = convexTest(schema, modules);
+    const owner = t.withIdentity({ tokenIdentifier: "https://clerk.example|owner", subject: "owner" });
+    const other = t.withIdentity({ tokenIdentifier: "https://clerk.example|other", subject: "other" });
+    const saved = await owner.mutation(api.accountDna.saveAccountDna, { niche: "Recipe videos", intendedAudience: "Home cooks looking for weeknight ideas.", primaryLanguage: "English", region: "India", replace: false });
+
+    await t.mutation(internal.accountDna.failCohortGeneration, { accountDnaId: saved.accountDnaId, revision: 1, message: "Gateway unavailable" });
+    expect((await owner.query(api.accountDna.getForCurrentOwner))?.generation).toMatchObject({ status: "failed", error: "Gateway unavailable" });
+    await expect(other.mutation(api.accountDna.retryCohortGeneration)).rejects.toThrow("Create Account DNA");
+    await expect(t.mutation(api.accountDna.retryCohortGeneration)).rejects.toThrow("Sign in");
+    await owner.mutation(api.accountDna.retryCohortGeneration);
+    expect((await owner.query(api.accountDna.getForCurrentOwner))?.generation.status).toBe("pending");
+  });
 });
+
+const archetypeFixture = [
+  ["Curious cook", "inTarget"], ["Methodical planner", "inTarget"], ["Practical parent", "inTarget"], ["Quick learner", "inTarget"], ["Budget experimenter", "inTarget"], ["Reliable regular", "inTarget"], ["Social sharer", "inTarget"], ["Casual browser", "adjacent"], ["Trend watcher", "adjacent"], ["Broad-interest viewer", "adjacent"],
+].map(([name, audienceSegment], index) => ({
+  name,
+  audienceSegment: audienceSegment as "inTarget" | "adjacent",
+  ocean: { openness: 0.4 + index * 0.02, conscientiousness: 0.5, extraversion: 0.6, agreeableness: 0.7, neuroticism: 0.3 },
+  interests: ["cooking", "useful advice"],
+}));
