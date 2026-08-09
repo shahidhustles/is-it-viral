@@ -50,7 +50,7 @@ const emptyForm: AccountDnaForm = {
   region: "",
 };
 
-export function AccountDnaOnboarding() {
+export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashboard?: boolean }) {
   const router = useRouter();
   const savedAccountDna = useQuery(api.accountDna.getForCurrentOwner);
   const saveAccountDna = useMutation(api.accountDna.saveAccountDna);
@@ -68,7 +68,7 @@ export function AccountDnaOnboarding() {
 
   if (savedAccountDna && !isEditing) {
     return (
-      <OnboardingFrame currentStep={2}>
+      <OnboardingFrame currentStep={2} withinDashboard={withinDashboard}>
         <section aria-labelledby="saved-account-dna-heading" className="space-y-8">
           <div className="space-y-3">
             <p className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -165,7 +165,7 @@ export function AccountDnaOnboarding() {
   };
 
   return (
-    <OnboardingFrame currentStep={step}>
+    <OnboardingFrame currentStep={step} withinDashboard={withinDashboard}>
       <section aria-labelledby="account-dna-heading" className="space-y-8">
         <div className="space-y-3">
           <h1 id="account-dna-heading" className="text-4xl font-semibold tracking-tight md:text-5xl">
@@ -268,7 +268,21 @@ export function AccountDnaOnboarding() {
   );
 }
 
-function OnboardingFrame({ children, currentStep }: { children: ReactNode; currentStep: number }) {
+function OnboardingFrame({ children, currentStep, withinDashboard }: { children: ReactNode; currentStep: number; withinDashboard: boolean }) {
+  const content = (
+    <div className="mx-auto grid max-w-[var(--page-max-width)] gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-20">
+      <div className="space-y-10">
+        <StepIndicator currentStep={currentStep} steps={steps} />
+        {children}
+      </div>
+      <LedgerNote />
+    </div>
+  );
+
+  if (withinDashboard) {
+    return content;
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
@@ -281,13 +295,7 @@ function OnboardingFrame({ children, currentStep }: { children: ReactNode; curre
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[var(--page-max-width)] gap-12 px-5 py-12 sm:px-8 md:py-20 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-20">
-        <div className="space-y-10">
-          <StepIndicator currentStep={currentStep} steps={steps} />
-          {children}
-        </div>
-        <LedgerNote />
-      </div>
+      <div className="px-5 py-12 sm:px-8 md:py-20">{content}</div>
     </main>
   );
 }

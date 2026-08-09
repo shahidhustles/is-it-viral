@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { BarChart3, Fingerprint, Home, Settings, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
@@ -76,7 +77,47 @@ function CohortStatus({ account }: { account: { generation: { status: "pending" 
 }
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  return <main className="min-h-screen bg-background lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]"><aside className="border-b border-border bg-card lg:min-h-screen lg:border-r lg:border-b-0"><div className="flex h-full flex-col p-5"><Link className="flex items-center gap-3 font-semibold tracking-tight" href="/dashboard"><span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary"><Fingerprint aria-hidden="true" className="size-4" /></span>Is It Viral</Link><nav aria-label="Application" className="mt-8 flex gap-1 overflow-x-auto lg:flex-col">{navigation.map(({ href, label, icon: Icon }) => <Link className="flex min-h-11 shrink-0 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2" href={href} key={href}><Icon aria-hidden="true" className="size-4" />{label}</Link>)}</nav></div></aside><div className="px-5 py-10 sm:px-8 md:py-14"><div className="mx-auto max-w-[var(--page-max-width)]">{children}</div></div></main>;
+  const pathname = usePathname();
+
+  return (
+    <main className="min-h-screen bg-background lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <aside className="border-b border-border bg-card lg:min-h-screen lg:border-r lg:border-b-0">
+        <div className="flex h-full flex-col p-5">
+          <Link className="flex items-center gap-3 font-semibold tracking-tight" href="/dashboard">
+            <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
+              <Fingerprint aria-hidden="true" className="size-4" />
+            </span>
+            Is It Viral
+          </Link>
+          <nav aria-label="Application" className="mt-8 flex gap-1 overflow-x-auto lg:flex-col">
+            {navigation.map(({ href, label, icon: Icon }) => {
+              const isActive = pathname === href;
+
+              return (
+                <Link
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-11 shrink-0 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+                    isActive
+                      ? "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)]"
+                      : "border border-transparent hover:bg-background",
+                  )}
+                  href={href}
+                  key={href}
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+      <div className="px-5 py-10 sm:px-8 md:py-14">
+        <div className="mx-auto max-w-[var(--page-max-width)]">{children}</div>
+      </div>
+    </main>
+  );
 }
 
 function DashboardSkeleton() { return <div className="max-w-3xl space-y-6" aria-label="Loading creator home"><div className="h-12 w-3/4 animate-pulse bg-card" /><div className="h-52 animate-pulse border border-border bg-card" /></div>; }
