@@ -1,7 +1,8 @@
 import { Check, ChevronDown, Users } from "lucide-react";
+import Link from "next/link";
 
 import { AccountDnaRecord } from "@/components/audience/account-dna-record";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 type AudienceSegment = "inTarget" | "adjacent";
 
@@ -97,6 +98,7 @@ function ReadyAudienceLedger({ account, onEdit }: Pick<AudienceLedgerProps, "acc
         <p className="text-lg leading-8 text-muted-foreground">
           These 100 personas are a stable model built from your Account DNA. They help assess audience fit; they are not real followers or a prediction of platform reach.
         </p>
+        <Link className={buttonVariants({ size: "lg" })} href="/analyze">Analyze a reel</Link>
       </header>
 
       <CohortComposition account={account} />
