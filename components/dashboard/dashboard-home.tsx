@@ -2,11 +2,12 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { BarChart3, ChevronUp, Home, LogOut, Sparkles, Users, Zap } from "lucide-react";
+import { BarChart3, ChevronUp, Home, LogOut, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { BrandMark } from "@/components/brand-mark";
 import { ReportList } from "@/components/analysis/report-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -120,9 +121,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <Sidebar className="border-border bg-card" collapsible="offcanvas">
         <SidebarHeader className="p-5">
           <Link className="flex items-center gap-3 font-semibold tracking-tight" href="/dashboard">
-            <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-              <Zap aria-hidden="true" className="size-4" />
-            </span>
+            <BrandMark className="size-8 rounded-[var(--radius-control)]" />
             Is It Viral
           </Link>
         </SidebarHeader>

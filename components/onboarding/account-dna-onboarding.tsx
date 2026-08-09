@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, ArrowRight, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { StepIndicator } from "@/components/onboarding/step-indicator";
+import { BrandMark } from "@/components/brand-mark";
 import { AccountDnaRecordRow } from "@/components/audience/account-dna-record";
 import { AudienceLedger } from "@/components/audience/audience-ledger";
 import {
@@ -307,9 +308,7 @@ function OnboardingFrame({ children, currentStep, showSteps = true, withinDashbo
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-[var(--page-max-width)] items-center gap-3 px-5 sm:px-8">
-          <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-            <Zap aria-hidden="true" className="size-4" />
-          </span>
+          <BrandMark className="size-8 rounded-[var(--radius-control)]" />
           <span className="font-semibold tracking-tight">Is It Viral</span>
           <span className="text-sm text-muted-foreground">Your audience</span>
         </div>

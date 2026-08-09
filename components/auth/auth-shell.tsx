@@ -1,14 +1,13 @@
-import { Zap } from "lucide-react";
 import Link from "next/link";
+
+import { BrandMark } from "@/components/brand-mark";
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="grid min-h-screen bg-background lg:grid-cols-[minmax(20rem,0.9fr)_minmax(28rem,1.1fr)]">
       <section className="relative hidden overflow-hidden border-r border-foreground bg-[radial-gradient(circle_at_24%_22%,rgba(163,230,53,0.36),transparent_25rem)] p-10 lg:flex lg:flex-col">
         <Link className="flex w-fit items-center gap-3 font-semibold tracking-tight" href="/">
-          <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-            <Zap aria-hidden="true" className="size-4" />
-          </span>
+          <BrandMark className="size-8 rounded-[var(--radius-control)]" />
           Is It Viral
         </Link>
         <div className="my-auto max-w-md">
@@ -26,9 +25,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
         <div className="w-full max-w-md">
           <Link className="mb-12 flex w-fit items-center gap-3 font-semibold tracking-tight lg:hidden" href="/">
-            <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-              <Zap aria-hidden="true" className="size-4" />
-            </span>
+            <BrandMark className="size-8 rounded-[var(--radius-control)]" />
             Is It Viral
           </Link>
           {children}

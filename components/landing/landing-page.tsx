@@ -10,11 +10,11 @@ import {
   ScanLine,
   Sparkles,
   Waypoints,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
+import { BrandMark } from "@/components/brand-mark";
 import { TextAnimate } from "@/components/ui/text-animate";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
@@ -197,9 +197,7 @@ function LandingNavigation({ cta }: { cta: LandingCta }) {
     <header className="sticky top-0 z-50 border-b border-border bg-background">
       <nav aria-label="Main navigation" className="mx-auto flex max-w-[var(--page-max-width)] items-center justify-between gap-4 px-5 py-3 sm:px-8">
         <Link className="flex items-center gap-3 font-semibold tracking-tight" href="#top">
-          <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-            <Zap aria-hidden="true" className="size-4" />
-          </span>
+          <BrandMark className="size-8 rounded-[var(--radius-control)]" />
           Is It Viral
         </Link>
         <div className="hidden items-center gap-1 lg:flex">
