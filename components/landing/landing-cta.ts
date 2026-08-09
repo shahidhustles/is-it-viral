@@ -17,7 +17,7 @@ export function getLandingCta({ accountDnaState, isAuthLoaded, isSignedIn }: Lan
       href: null,
       isLoading: true,
       label: "Checking your workspace…",
-      note: "Finding your saved audience record.",
+      note: "Finding your saved audience details.",
     };
   }
 
@@ -48,4 +48,4 @@ export function getLandingCta({ accountDnaState, isAuthLoaded, isSignedIn }: Lan
 }
 
 export const advisoryDisclosure =
-  "It’s a simulated second opinion. It cannot promise performance or predict Instagram’s private ranking system. You decide what to make and whether to post it.";
+  "It’s a private second opinion for your reel. It cannot promise results or predict Instagram’s ranking system. You decide what to make and whether to post it.";

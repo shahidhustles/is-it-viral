@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, ArrowRight, Fingerprint } from "lucide-react";
+import { ArrowLeft, ArrowRight, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -50,6 +50,14 @@ const emptyForm: AccountDnaForm = {
   intendedAudience: "",
   primaryLanguage: "",
   region: "",
+};
+
+const demoForm: AccountDnaForm = {
+  niche: "Developer hack club hosting hackathons and workshops",
+  intendedAudience:
+    "Developers, students, and aspiring builders in San Francisco who want to join hackathons and hands-on workshops.",
+  primaryLanguage: "English",
+  region: "San Francisco",
 };
 
 export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashboard?: boolean }) {
@@ -121,6 +129,12 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
     setSaveError(null);
   };
 
+  const useDemoSetup = () => {
+    setForm(demoForm);
+    setErrors({});
+    setSaveError(null);
+  };
+
   const continueToNextStep = () => {
     const nextErrors = validateStep(form, step);
     setErrors(nextErrors);
@@ -181,6 +195,11 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
                 ? "This context makes the synthetic cohort a better representation of the audience you intend to reach."
                 : "You remain in control of how to use this simulated audience record."}
           </p>
+          {step === 0 ? (
+            <Button disabled={isSaving} onClick={useDemoSetup} variant="outline">
+              Use demo setup
+            </Button>
+          ) : null}
         </div>
 
         <div
@@ -289,7 +308,7 @@ function OnboardingFrame({ children, currentStep, showSteps = true, withinDashbo
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-[var(--page-max-width)] items-center gap-3 px-5 sm:px-8">
           <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-            <Fingerprint aria-hidden="true" className="size-4" />
+            <Zap aria-hidden="true" className="size-4" />
           </span>
           <span className="font-semibold tracking-tight">Is It Viral</span>
           <span className="text-sm text-muted-foreground">Account DNA</span>

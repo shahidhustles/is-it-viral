@@ -10,6 +10,7 @@ import {
   ScanLine,
   Sparkles,
   Waypoints,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -20,6 +21,15 @@ import { cn } from "@/lib/utils";
 
 import { FeatureCarousel, type FeatureCarouselItem } from "./feature-carousel";
 import { advisoryDisclosure, getLandingCta, type LandingCta } from "./landing-cta";
+
+
+const demoVideoUrl = "";
+
+const landingNavigation = [
+  { href: "#first-audience", label: "First audience" },
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#your-call", label: "Your call" },
+] as const;
 
 const processSteps = [
   {
@@ -48,26 +58,26 @@ const processSteps = [
 const evidencePanels: readonly FeatureCarouselItem[] = [
   {
     icon: Network,
-    label: "Build the audience",
-    title: "We simulate the people you want to reach.",
-    body: "Your niche, audience, language, and region shape a private first audience for the reel before you share it for real.",
-    accent: "100 simulated people, shaped around your brief",
+    label: "Set your audience",
+    title: "Start with the people you want to reach.",
+    body: "Your topic, audience, language, and region give every reel review the right context.",
+    accent: "Built around your content and audience",
     preview: "cohort",
   },
   {
     icon: ScanLine,
     label: "Read the reel",
-    title: "We watch it frame by frame, then listen to what it says.",
-    body: "We sample the visuals every second and transcribe the spoken words in your chosen language. The review uses the whole reel.",
-    accent: "Visuals, spoken words, hook, clarity, pace, and fit",
+    title: "We review what people see and hear.",
+    body: "We look at your visuals and spoken words to find what is clear, what grabs attention, and what needs work.",
+    accent: "Your opening, message, pace, and audience fit",
     preview: "video-dna",
   },
   {
     icon: CirclePlay,
     label: "Test the reaction",
-    title: "We start with 10 people, then follow the response.",
-    body: "The simulation starts with 10 viewers. Their response decides whether the reel moves through shares and relevant recommendations. We run up to six rounds, then show you the verdict.",
-    accent: "A staged simulation, separate from Instagram ranking",
+    title: "See how your reel could land.",
+    body: "Get a private preview of how the right people may respond, then use it to sharpen your next edit.",
+    accent: "Helpful guidance, not a promise of results",
     preview: "replay",
   },
 ] as const;
@@ -82,7 +92,7 @@ export function LandingPage() {
   });
 
   return (
-    <main className="overflow-hidden bg-background">
+    <main className="overflow-x-hidden bg-background" id="top">
       <LandingNavigation cta={cta} />
 
       <section className="relative isolate overflow-hidden border-b border-foreground bg-[radial-gradient(circle_at_84%_22%,rgba(163,230,53,0.2),transparent_32rem)]" aria-labelledby="landing-heading">
@@ -95,8 +105,11 @@ export function LandingPage() {
             <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
               Your draft reel gets a private, simulated first audience. See how they could respond, then decide what to tighten before you post.
             </p>
-            <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <LandingAction cta={cta} size="lg" />
+            <div className="mt-9 max-w-md space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <LandingAction className="w-full" cta={cta} size="lg" />
+                <DemoVideoAction className="w-full" />
+              </div>
               <p className="text-sm leading-6 text-muted-foreground">{cta.note}</p>
             </div>
           </div>
@@ -105,14 +118,14 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-b border-border bg-card" aria-labelledby="process-heading">
+      <section className="scroll-mt-20 border-b border-border bg-card" id="first-audience" aria-labelledby="process-heading">
         <div className="mx-auto max-w-[var(--page-max-width)] px-5 py-16 sm:px-8 md:py-24">
           <div className="max-w-2xl">
             <h2 className="text-balance text-3xl font-semibold tracking-[-0.03em] sm:text-4xl" id="process-heading">
               Give every reel a first audience.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-8 text-muted-foreground">
-              See how a simulated version of your target audience could react before the real post reaches anyone.
+              See how the people you want to reach may react before you publish.
             </p>
           </div>
 
@@ -132,7 +145,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-b border-border" aria-labelledby="evidence-heading">
+      <section className="scroll-mt-20 border-b border-border" id="how-it-works" aria-labelledby="evidence-heading">
         <div className="mx-auto max-w-[var(--page-max-width)] px-5 py-16 sm:px-8 md:py-24">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] lg:gap-20">
             <div>
@@ -140,7 +153,7 @@ export function LandingPage() {
                 How it works.
               </h2>
               <p className="mt-5 max-w-md text-lg leading-8 text-muted-foreground">
-                This is how a draft reel becomes a simulated verdict you can use before you post.
+                Turn a draft reel into clear feedback you can use before you post.
               </p>
               <div className="mt-8 border-l border-foreground pl-5">
                 <p className="font-medium">You’re still the creative director.</p>
@@ -153,7 +166,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-foreground text-background" aria-labelledby="advisory-heading">
+      <section className="scroll-mt-20 bg-foreground text-background" id="your-call" aria-labelledby="advisory-heading">
         <div className="mx-auto grid max-w-[var(--page-max-width)] gap-10 px-5 py-16 sm:px-8 md:py-24 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">
           <div>
             <Sparkles aria-hidden="true" className="size-6" strokeWidth={1.75} />
@@ -163,7 +176,7 @@ export function LandingPage() {
           </div>
           <div>
             <p className="max-w-2xl text-xl leading-8 text-white/78">{advisoryDisclosure}</p>
-            <p className="mt-5 text-sm leading-6 text-white/78">Tell us who you want to reach → upload a draft up to 30 seconds → get your edit list.</p>
+            <p className="mt-5 text-sm leading-6 text-white/78">Tell us who you want to reach, upload a short draft, and get an edit list.</p>
             <LandingAction className="mt-8 bg-primary hover:bg-primary" cta={cta} size="lg" />
           </div>
         </div>
@@ -171,7 +184,7 @@ export function LandingPage() {
 
       <footer className="border-t border-border bg-card">
         <div className="mx-auto flex max-w-[var(--page-max-width)] flex-col gap-4 px-5 py-7 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>Is It Viral · A first audience for your reel before it goes live.</p>
+          <p>Is It Viral · Clearer reel feedback before you post.</p>
           <FooterAction cta={cta} />
         </div>
       </footer>
@@ -181,14 +194,21 @@ export function LandingPage() {
 
 function LandingNavigation({ cta }: { cta: LandingCta }) {
   return (
-    <header className="border-b border-border bg-background">
-      <nav aria-label="Main navigation" className="mx-auto flex max-w-[var(--page-max-width)] items-center justify-between gap-4 px-5 py-4 sm:px-8">
-        <Link className="flex items-center gap-3 font-semibold tracking-tight" href="/">
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
+      <nav aria-label="Main navigation" className="mx-auto flex max-w-[var(--page-max-width)] items-center justify-between gap-4 px-5 py-3 sm:px-8">
+        <Link className="flex items-center gap-3 font-semibold tracking-tight" href="#top">
           <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-            <Fingerprint aria-hidden="true" className="size-4" />
+            <Zap aria-hidden="true" className="size-4" />
           </span>
           Is It Viral
         </Link>
+        <div className="hidden items-center gap-1 lg:flex">
+          {landingNavigation.map((item) => (
+            <Link className="rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2" href={item.href} key={item.href}>
+              {item.label}
+            </Link>
+          ))}
+        </div>
         <LandingAction cta={cta} size="sm" />
       </nav>
     </header>
@@ -201,7 +221,7 @@ function SimulationPreview() {
       <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
         <div>
           <p className="text-sm font-medium" id="simulation-preview-title">A first audience for your draft.</p>
-          <p className="mt-1 text-sm text-muted-foreground">A private, simulated version of the people you want to reach sees the reel before the real post does.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Get a private preview before you share the real post.</p>
         </div>
         <span className="shrink-0 rounded-full border border-foreground px-3 py-1 text-xs font-medium">Before you post</span>
       </div>
@@ -240,6 +260,16 @@ function LandingAction({ className, cta, size }: { className?: string; cta: Land
   }
 
   return <Link className={actionClassName} href={cta.href}>{cta.label}<ArrowRight aria-hidden="true" /></Link>;
+}
+
+function DemoVideoAction({ className }: { className?: string }) {
+  const actionClassName = buttonVariants({ className, size: "lg", variant: "outline" });
+
+  if (!demoVideoUrl) {
+    return <button aria-disabled="true" className={actionClassName} disabled title="Demo video coming soon" type="button"><CirclePlay aria-hidden="true" />Watch Live demo</button>;
+  }
+
+  return <a className={actionClassName} href={demoVideoUrl} rel="noreferrer" target="_blank"><CirclePlay aria-hidden="true" />Watch demo</a>;
 }
 
 function FooterAction({ cta }: { cta: LandingCta }) {

@@ -19,7 +19,7 @@ The visitor needs to understand that the product compares a draft reel with a sa
 
 ## Section system
 
-1. **Navigation / action rail** — white paper bar, compact fingerprint stamp, one compact lime state-aware action. It keeps conversion present without competing with the evidence.
+1. **Navigation / action rail** — sticky white paper bar, compact fingerprint stamp, anchor links to the first audience, walkthrough, and advisory close, plus one compact lime state-aware action. It keeps conversion present without competing with the evidence.
 2. **Opening proposition / replay plate** — an asymmetrical paper spread with a quiet lime halo behind a product-native cohort field: a faint propagation network, not reference terrain. The hard-edged specimen teaches one causal path—seed viewers, direct shares, relevant viewers—before the carousel introduces detailed state grammar.
 3. **Evidence route** — cream work surface and a full-width, divided three-part sequence. Account DNA, Video DNA, and cohort simulation use the same typographic rhythm but no repeated floating-card pattern.
 4. **How it works** — a white two-column reading field. A creator-control statement anchors the left; the right is a keyboard-operable walkthrough carousel with three code-native illustrative plates: the private 100-person audience simulation, the per-second visual and audio review, and the staged first-10-viewer propagation that creates a simulated verdict. Its one slide transition makes the method inspectable, not ornamental.

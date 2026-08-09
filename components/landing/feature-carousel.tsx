@@ -56,8 +56,8 @@ export function FeatureCarousel({ features }: FeatureCarouselProps) {
 
       <div className="overflow-hidden border border-foreground bg-card p-4 shadow-[var(--shadow-action)] sm:p-6">
         <div className="flex items-center justify-between border-b border-border pb-4 text-sm">
-          <span className="inline-flex items-center gap-2 font-medium"><Icon aria-hidden="true" className="size-4" /> How your verdict is built</span>
-          <span className="text-muted-foreground">Illustrative walkthrough</span>
+          <span className="inline-flex items-center gap-2 font-medium"><Icon aria-hidden="true" className="size-4" /> How your review works</span>
+          <span className="text-muted-foreground">A quick look</span>
         </div>
         <div aria-labelledby={`${carouselId}-tab-${activeIndex}`} className="relative mt-5 min-h-72" id={`${carouselId}-panel`} role="tabpanel">
           <AnimatePresence initial={false} mode="wait">
@@ -138,13 +138,13 @@ function CohortPreview() {
           <CarouselGraphNode cx={133} cy={207} state="cream" />
           <CarouselGraphNode cx={346} cy={211} state="cream" />
         </svg>
-        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">A private, simulated first audience</p>
+        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">Your private audience preview</p>
       </div>
       <dl className="divide-y divide-border border-y border-border">
         <DataRow label="Your niche" value="Your topic" />
         <DataRow label="Your audience" value="Your people" />
         <DataRow label="Language + region" value="Your context" />
-        <DataRow label="First audience" value="100 people" />
+        <DataRow label="Your review" value="Made for your audience" />
       </dl>
     </div>
   );
@@ -152,16 +152,16 @@ function CohortPreview() {
 
 function VideoDnaPreview() {
   const signals = [
-    ["Every second", "A visual frame is sampled"],
-    ["What’s said", "The audio is transcribed"],
-    ["Your language", "Read in the context you set"],
-    ["The review", "Hook, clarity, pace, and fit"],
+    ["What people see", "Your visuals are reviewed"],
+    ["What you say", "Your spoken words are reviewed"],
+    ["Your audience", "Read in the context you set"],
+    ["Your feedback", "Opening, clarity, pace, and fit"],
   ] as const;
 
   return (
     <div className="grid h-full gap-6 md:grid-cols-[11rem_minmax(0,1fr)]">
       <div className="relative min-h-56 overflow-hidden border border-foreground bg-foreground p-4 text-background">
-        <p className="text-xs text-white/65">Your draft, sampled every second</p>
+        <p className="text-xs text-white/65">Your draft, ready for review</p>
         <div className="mt-5 grid grid-cols-4 gap-2" aria-hidden="true">
           {["00:00", "00:01", "00:02", "00:03"].map((second, index) => (
             <div className="h-16 border border-white/35 p-1.5" key={second}>
@@ -183,7 +183,7 @@ function VideoDnaPreview() {
             <p className="text-sm text-muted-foreground">{detail}</p>
           </div>
         ))}
-        <p className="pt-2 text-sm leading-6 text-muted-foreground">The verdict uses every sampled visual and the full transcript.</p>
+        <p className="pt-2 text-sm leading-6 text-muted-foreground">Your feedback uses what people see and hear in the reel.</p>
       </div>
     </div>
   );
@@ -205,12 +205,12 @@ function ReplayPreview() {
           <CarouselGraphNode cx={294} cy={188} state="open" />
           <CarouselGraphNode cx={405} cy={122} state="mint" />
         </svg>
-        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">First 10 viewers → next people → simulated verdict</p>
+        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">Private audience preview → clear feedback</p>
       </div>
       <ol className="space-y-3 border-l border-border pl-4 text-sm">
-        <li><span className="font-medium">First pass</span><p className="mt-1 text-muted-foreground">10 simulated people get the first look</p></li>
-        <li><span className="font-medium">Next pass</span><p className="mt-1 text-muted-foreground">Their simulated engagement decides what moves on</p></li>
-        <li><span className="font-medium">Verdict</span><p className="mt-1 text-muted-foreground">Up to six rounds produce your simulated result</p></li>
+        <li><span className="font-medium">First look</span><p className="mt-1 text-muted-foreground">See the first response to your reel</p></li>
+        <li><span className="font-medium">What lands</span><p className="mt-1 text-muted-foreground">Find the moments that connect</p></li>
+        <li><span className="font-medium">Your next edit</span><p className="mt-1 text-muted-foreground">Get clear ideas for what to change</p></li>
       </ol>
     </div>
   );
