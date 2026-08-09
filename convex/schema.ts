@@ -81,10 +81,12 @@ export default defineSchema({
     position: v.object({ x: v.number(), y: v.number() }),
   })
     .index("by_accountDnaId", ["accountDnaId"])
-    .index("by_accountDnaId_and_personaIndex", [
+    .index("by_accountDnaId_and_cohortRevision_and_personaIndex", [
       "accountDnaId",
+      "cohortRevision",
       "personaIndex",
-    ]),
+    ])
+    .index("by_accountDnaId_and_personaIndex", ["accountDnaId", "personaIndex"]),
 
   cohortConnections: defineTable({
     accountDnaId: v.id("accountDnas"),
@@ -93,8 +95,54 @@ export default defineSchema({
     toPersonaId: v.id("cohortPersonas"),
   })
     .index("by_accountDnaId", ["accountDnaId"])
+    .index("by_accountDnaId_and_cohortRevision", ["accountDnaId", "cohortRevision"])
     .index("by_accountDnaId_and_fromPersonaId", [
       "accountDnaId",
       "fromPersonaId",
     ]),
+
+  analysisReports: defineTable({
+    ownerTokenIdentifier: v.string(),
+    accountDnaId: v.id("accountDnas"),
+    cohortRevision: v.number(),
+    seed: v.string(),
+    videoDna: v.object({
+      hook: v.number(),
+      clarity: v.number(),
+      pacing: v.number(),
+      credibility: v.number(),
+      audienceRelevance: v.number(),
+      shareTrigger: v.number(),
+    }),
+    metrics: v.object({
+      totalReach: v.number(),
+      inTargetReach: v.number(),
+      outOfTargetReach: v.number(),
+      simulatedShareRate: v.number(),
+      cascadeDepth: v.number(),
+    }),
+    verdict: v.union(
+      v.literal("Breakout potential"),
+      v.literal("Strong in target"),
+      v.literal("Mixed signal"),
+      v.literal("Stops early"),
+    ),
+    stopReason: v.union(v.literal("fewerThanTwoNewExposures"), v.literal("maximumRoundsReached")),
+    eventCount: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_ownerTokenIdentifier", ["ownerTokenIdentifier"])
+    .index("by_accountDnaId", ["accountDnaId"]),
+
+  analysisReportEvents: defineTable({
+    analysisReportId: v.id("analysisReports"),
+    order: v.number(),
+    round: v.number(),
+    type: v.union(v.literal("exposed"), v.literal("shared"), v.literal("didNotShare")),
+    personaId: v.id("cohortPersonas"),
+    source: v.union(v.null(), v.literal("seed"), v.literal("share"), v.literal("recommendation")),
+    sourcePersonaId: v.union(v.null(), v.id("cohortPersonas")),
+    score: v.union(v.null(), v.number()),
+  })
+    .index("by_analysisReportId_and_order", ["analysisReportId", "order"]),
 });
