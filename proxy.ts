@@ -6,6 +6,7 @@ import type { NextRequest } from "next/server";
 
 const isPrivateRoute = createRouteMatcher([
   "/onboarding(.*)",
+  "/post-sign-in(.*)",
   "/dashboard(.*)",
   "/analyze(.*)",
 ]);

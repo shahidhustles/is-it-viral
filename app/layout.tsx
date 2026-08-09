@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={cn(geist.variable, fraunces.variable, "font-sans")}>
-      <ClerkProvider signInForceRedirectUrl="/onboarding" signInUrl="/sign-in" signUpForceRedirectUrl="/onboarding" signUpUrl="/sign-up">
+      <ClerkProvider signInForceRedirectUrl="/post-sign-in" signInUrl="/sign-in" signUpForceRedirectUrl="/onboarding" signUpUrl="/sign-up">
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
