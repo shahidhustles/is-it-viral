@@ -43,6 +43,7 @@ describe("analysis report simulation", () => {
       videoDna,
     });
     const report = await owner.query(api.analysisReports.getForCurrentOwner, { reportId: created.reportId });
+    const reports = await owner.query(api.analysisReports.listForCurrentOwner, {});
 
     expect(report).toMatchObject({
       seed: "report-replay-seed",
@@ -57,7 +58,11 @@ describe("analysis report simulation", () => {
     expect(report?.events).toEqual(expect.arrayContaining([
       expect.objectContaining({ action: expect.any(String), rationale: expect.any(String), watchCompletion: expect.any(Number) }),
     ]));
+    expect(reports).toEqual([
+      expect.objectContaining({ _id: created.reportId, verdict: expect.any(String) }),
+    ]);
     await expect(other.query(api.analysisReports.getForCurrentOwner, { reportId: created.reportId })).resolves.toBeNull();
+    await expect(other.query(api.analysisReports.listForCurrentOwner, {})).resolves.toEqual([]);
   });
 });
 

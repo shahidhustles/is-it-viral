@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ReportList } from "@/components/analysis/report-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -88,7 +89,7 @@ export function DashboardHome() {
             <div className="space-y-2"><h2 className="text-2xl font-semibold tracking-tight" id="recent-analyses-heading">Recent analyses</h2><p className="text-muted-foreground">Each report keeps the simulated cohort context it was created with.</p></div>
             <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:inline-flex")} href="/reports">All reports</Link>
           </div>
-          <div className="border-y border-border py-10 text-center"><p className="font-medium">No reel analyses yet.</p><p className="mt-2 text-sm text-muted-foreground">When your cohort is ready, analyze a draft to create the first report.</p></div>
+          <ReportList limit={5} />
         </section>
       </div>
     </DashboardShell>

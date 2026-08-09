@@ -86,6 +86,13 @@ const reportValidator = v.object({
   improvements: v.optional(v.array(improvementValidator)),
 });
 
+const reportSummaryValidator = v.object({
+  _id: v.id("analysisReports"),
+  verdict: verdictValidator,
+  metrics: metricsValidator,
+  createdAt: v.number(),
+});
+
 const mediaAnalysisValidator = v.object({
   uploadId: v.id("reelUploads"),
   transcript: v.string(),
@@ -225,6 +232,30 @@ export const getForCurrentOwner = query({
         toPersonaId: connection.toPersonaId,
       })),
     };
+  },
+});
+
+export const listForCurrentOwner = query({
+  args: {},
+  returns: v.array(reportSummaryValidator),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const reports = await ctx.db
+      .query("analysisReports")
+      .withIndex("by_ownerTokenIdentifier", (q) =>
+        q.eq("ownerTokenIdentifier", identity.tokenIdentifier),
+      )
+      .order("desc")
+      .take(25);
+
+    return reports.map((report) => ({
+      _id: report._id,
+      verdict: report.verdict,
+      metrics: report.metrics,
+      createdAt: report.createdAt,
+    }));
   },
 });
 
