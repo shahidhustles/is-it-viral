@@ -2,7 +2,7 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { BarChart3, ChevronUp, Fingerprint, Home, LogOut, Sparkles, Users } from "lucide-react";
+import { BarChart3, ChevronUp, Home, LogOut, Sparkles, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -41,7 +41,7 @@ const navigation = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ] as const;
 
-const activeNavigationClass = "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)] hover:bg-primary hover:text-foreground";
+const activeNavigationClass = "border border-foreground shadow-[var(--shadow-action)] data-active:!bg-primary data-active:!text-foreground data-active:hover:!bg-primary data-active:hover:!text-foreground";
 
 export function DashboardHome() {
   const account = useQuery(api.accountDna.getForCurrentOwner);
@@ -120,7 +120,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <SidebarHeader className="p-5">
           <Link className="flex items-center gap-3 font-semibold tracking-tight" href="/dashboard">
             <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
-              <Fingerprint aria-hidden="true" className="size-4" />
+              <Zap aria-hidden="true" className="size-4" />
             </span>
             Is It Viral
           </Link>
