@@ -12,7 +12,10 @@ import type * as accountDna from "../accountDna.js";
 import type * as analysisReports from "../analysisReports.js";
 import type * as cohort from "../cohort.js";
 import type * as cohortGeneration from "../cohortGeneration.js";
+import type * as reelUploads from "../reelUploads.js";
 import type * as simulation from "../simulation.js";
+import type * as videoAnalysis from "../videoAnalysis.js";
+import type * as videoAnalysisInput from "../videoAnalysisInput.js";
 
 import type {
   ApiFromModules,
@@ -25,7 +28,10 @@ declare const fullApi: ApiFromModules<{
   analysisReports: typeof analysisReports;
   cohort: typeof cohort;
   cohortGeneration: typeof cohortGeneration;
+  reelUploads: typeof reelUploads;
   simulation: typeof simulation;
+  videoAnalysis: typeof videoAnalysis;
+  videoAnalysisInput: typeof videoAnalysisInput;
 }>;
 
 /**

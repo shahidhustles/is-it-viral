@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
-import { mutation, query } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { runSimulation, type VideoDna } from "./simulation";
 
 const videoDnaValidator = v.object({
@@ -10,6 +11,13 @@ const videoDnaValidator = v.object({
   credibility: v.number(),
   audienceRelevance: v.number(),
   shareTrigger: v.number(),
+});
+
+const improvementValidator = v.object({
+  timestampSeconds: v.number(),
+  opportunity: v.string(),
+  suggestedEdit: v.string(),
+  expectedAudienceEffect: v.string(),
 });
 
 const metricsValidator = v.object({
@@ -52,6 +60,20 @@ const reportValidator = v.object({
   stopReason: stopReasonValidator,
   createdAt: v.number(),
   events: v.array(eventValidator),
+  sourceUploadId: v.optional(v.id("reelUploads")),
+  transcript: v.optional(v.string()),
+  videoDnaExplanations: v.optional(v.object({ hook: v.string(), clarity: v.string(), pacing: v.string(), credibility: v.string(), audienceRelevance: v.string(), shareTrigger: v.string(), visualThemes: v.array(v.string()), spokenThemes: v.array(v.string()) })),
+  improvements: v.optional(v.array(improvementValidator)),
+});
+
+const mediaAnalysisValidator = v.object({
+  uploadId: v.id("reelUploads"),
+  transcript: v.string(),
+  videoDna: videoDnaValidator,
+  explanations: v.object({
+    hook: v.string(), clarity: v.string(), pacing: v.string(), credibility: v.string(), audienceRelevance: v.string(), shareTrigger: v.string(), visualThemes: v.array(v.string()), spokenThemes: v.array(v.string()),
+  }),
+  improvements: v.array(improvementValidator),
 });
 
 export const createForCurrentOwner = mutation({
@@ -69,62 +91,57 @@ export const createForCurrentOwner = mutation({
       throw new Error("A ready Account DNA cohort is required before running a simulation.");
     }
 
-    const [personas, connections] = await Promise.all([
-      ctx.db
-        .query("cohortPersonas")
-        .withIndex("by_accountDnaId_and_cohortRevision_and_personaIndex", (q) =>
-          q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision),
-        )
-        .take(100),
-      ctx.db
-        .query("cohortConnections")
-        .withIndex("by_accountDnaId_and_cohortRevision", (q) =>
-          q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision),
-        )
-        .take(300),
-    ]);
-    if (personas.length < 10) throw new Error("The saved cohort is incomplete. Generate it again before running a simulation.");
-
-    const simulation = runSimulation({
-      personas: personas.map((persona) => ({
-        id: persona._id,
-        personaIndex: persona.personaIndex,
-        audienceSegment: persona.audienceSegment,
-        ocean: persona.ocean,
-        affinityVector: persona.affinityVector,
-        interests: persona.interests,
-        sharingThreshold: persona.sharingThreshold,
-      })),
-      connections: connections.map((connection) => ({
-        fromPersonaId: connection.fromPersonaId,
-        toPersonaId: connection.toPersonaId,
-      })),
-    }, args.videoDna, args.seed.trim());
-
-    const reportId = await ctx.db.insert("analysisReports", {
-      ownerTokenIdentifier: identity.tokenIdentifier,
-      accountDnaId: account._id,
-      cohortRevision: account.revision,
-      seed: args.seed.trim(),
-      videoDna: args.videoDna,
-      metrics: simulation.metrics,
-      verdict: simulation.verdict,
-      stopReason: simulation.stopReason,
-      eventCount: simulation.events.length,
-      createdAt: Date.now(),
-    });
-    for (const event of simulation.events) {
-      await ctx.db.insert("analysisReportEvents", {
-        analysisReportId: reportId,
-        ...event,
-        personaId: event.personaId,
-        sourcePersonaId: event.sourcePersonaId,
-      });
-    }
-
-    return { reportId };
+    return await saveSimulationReport(ctx, account, identity.tokenIdentifier, args.seed.trim(), args.videoDna);
   },
 });
+
+export const createFromMediaAnalysis = internalMutation({
+  args: mediaAnalysisValidator,
+  returns: v.object({ reportId: v.id("analysisReports") }),
+  handler: async (ctx, args) => {
+    const upload = await ctx.db.get(args.uploadId);
+    if (!upload) throw new Error("The uploaded reel is unavailable.");
+    const account = await ctx.db
+      .query("accountDnas")
+      .withIndex("by_ownerTokenIdentifier", (q) => q.eq("ownerTokenIdentifier", upload.ownerTokenIdentifier))
+      .unique();
+    if (!account || account.cohortStatus !== "ready") {
+      throw new Error("The saved audience cohort is no longer ready.");
+    }
+    if (args.improvements.length !== 3) {
+      throw new Error("Video DNA must include exactly three improvement opportunities.");
+    }
+    const saved = await saveSimulationReport(
+      ctx,
+      account,
+      upload.ownerTokenIdentifier,
+      `reel-${args.uploadId}`,
+      args.videoDna,
+      { uploadId: args.uploadId, transcript: args.transcript, explanations: args.explanations, improvements: args.improvements },
+    );
+    await ctx.db.patch(upload._id, { status: "complete", reportId: saved.reportId, error: undefined, updatedAt: Date.now() });
+    return saved;
+  },
+});
+
+async function saveSimulationReport(
+  ctx: MutationCtx,
+  account: Doc<"accountDnas">,
+  ownerTokenIdentifier: string,
+  seed: string,
+  videoDna: VideoDna,
+  media?: { uploadId: Id<"reelUploads">; transcript: string; explanations: { hook: string; clarity: string; pacing: string; credibility: string; audienceRelevance: string; shareTrigger: string; visualThemes: string[]; spokenThemes: string[] }; improvements: Array<{ timestampSeconds: number; opportunity: string; suggestedEdit: string; expectedAudienceEffect: string }> },
+) {
+  const [personas, connections] = await Promise.all([
+    ctx.db.query("cohortPersonas").withIndex("by_accountDnaId_and_cohortRevision_and_personaIndex", (q) => q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision)).take(100),
+    ctx.db.query("cohortConnections").withIndex("by_accountDnaId_and_cohortRevision", (q) => q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision)).take(300),
+  ]);
+  if (personas.length < 10) throw new Error("The saved cohort is incomplete. Generate it again before running a simulation.");
+  const simulation = runSimulation({ personas: personas.map((persona) => ({ id: persona._id, personaIndex: persona.personaIndex, audienceSegment: persona.audienceSegment, ocean: persona.ocean, affinityVector: persona.affinityVector, interests: persona.interests, sharingThreshold: persona.sharingThreshold })), connections: connections.map((connection) => ({ fromPersonaId: connection.fromPersonaId, toPersonaId: connection.toPersonaId })) }, videoDna, seed);
+  const reportId = await ctx.db.insert("analysisReports", { ownerTokenIdentifier, accountDnaId: account._id, cohortRevision: account.revision, seed, videoDna, metrics: simulation.metrics, verdict: simulation.verdict, stopReason: simulation.stopReason, eventCount: simulation.events.length, createdAt: Date.now(), ...(media ? { sourceUploadId: media.uploadId, transcript: media.transcript, videoDnaExplanations: media.explanations, improvements: media.improvements } : {}) });
+  for (const event of simulation.events) await ctx.db.insert("analysisReportEvents", { analysisReportId: reportId, ...event });
+  return { reportId };
+}
 
 export const getForCurrentOwner = query({
   args: { reportId: v.id("analysisReports") },
@@ -148,6 +165,10 @@ export const getForCurrentOwner = query({
       verdict: report.verdict,
       stopReason: report.stopReason,
       createdAt: report.createdAt,
+      ...(report.sourceUploadId ? { sourceUploadId: report.sourceUploadId } : {}),
+      ...(report.transcript ? { transcript: report.transcript } : {}),
+      ...(report.videoDnaExplanations ? { videoDnaExplanations: report.videoDnaExplanations } : {}),
+      ...(report.improvements ? { improvements: report.improvements } : {}),
       events: events.map((event) => ({
         order: event.order,
         round: event.round,

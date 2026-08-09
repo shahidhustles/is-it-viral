@@ -130,9 +130,54 @@ export default defineSchema({
     stopReason: v.union(v.literal("fewerThanTwoNewExposures"), v.literal("maximumRoundsReached")),
     eventCount: v.number(),
     createdAt: v.number(),
+    sourceUploadId: v.optional(v.id("reelUploads")),
+    transcript: v.optional(v.string()),
+    videoDnaExplanations: v.optional(v.object({
+      hook: v.string(), clarity: v.string(), pacing: v.string(), credibility: v.string(), audienceRelevance: v.string(), shareTrigger: v.string(),
+      visualThemes: v.array(v.string()), spokenThemes: v.array(v.string()),
+    })),
+    improvements: v.optional(v.array(v.object({
+      timestampSeconds: v.number(),
+      opportunity: v.string(),
+      suggestedEdit: v.string(),
+      expectedAudienceEffect: v.string(),
+    }))),
   })
     .index("by_ownerTokenIdentifier", ["ownerTokenIdentifier"])
     .index("by_accountDnaId", ["accountDnaId"]),
+
+  reelUploads: defineTable({
+    ownerTokenIdentifier: v.string(),
+    reelStorageId: v.id("_storage"),
+    audioStorageId: v.id("_storage"),
+    frameStorageIds: v.array(v.object({ second: v.number(), storageId: v.id("_storage") })),
+    fileName: v.string(),
+    contentType: v.string(),
+    durationSeconds: v.number(),
+    status: v.union(
+      v.literal("queued"),
+      v.literal("transcribing"),
+      v.literal("analyzing"),
+      v.literal("complete"),
+      v.literal("failed"),
+    ),
+    error: v.optional(v.string()),
+    reportId: v.optional(v.id("analysisReports")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerTokenIdentifier", ["ownerTokenIdentifier"])
+    .index("by_ownerTokenIdentifier_and_createdAt", ["ownerTokenIdentifier", "createdAt"]),
+
+  reelUploadTickets: defineTable({
+    ownerTokenIdentifier: v.string(),
+    kind: v.union(v.literal("reel"), v.literal("audio"), v.literal("frame")),
+    status: v.union(v.literal("issued"), v.literal("claimed")),
+    storageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+  })
+    .index("by_ownerTokenIdentifier_and_storageId", ["ownerTokenIdentifier", "storageId"])
+    .index("by_ownerTokenIdentifier_and_status", ["ownerTokenIdentifier", "status"]),
 
   analysisReportEvents: defineTable({
     analysisReportId: v.id("analysisReports"),

@@ -60,6 +60,26 @@ export function AnalysisReport({ reportId }: AnalysisReportProps) {
         </dl>
       </section>
 
+      {report.videoDnaExplanations ? <VideoDnaRecord videoDna={report.videoDna} explanations={report.videoDnaExplanations} /> : null}
+
+      {report.improvements ? (
+        <section aria-labelledby="improvements-heading" className="space-y-5">
+          <div className="max-w-2xl space-y-2">
+            <h2 className="text-2xl font-semibold tracking-tight" id="improvements-heading">Three edits to test first</h2>
+            <p className="text-muted-foreground">These timestamped recommendations come from the saved Video DNA. They are practical hypotheses to test with your audience, not guarantees.</p>
+          </div>
+          <ol className="border-y border-border">
+            {report.improvements.map((improvement) => (
+              <li className="grid gap-5 border-b border-border py-6 last:border-b-0 md:grid-cols-[7rem_minmax(0,1fr)_minmax(0,1fr)]" key={`${improvement.timestampSeconds}-${improvement.suggestedEdit}`}>
+                <p className="text-sm font-medium text-muted-foreground">{formatTimestamp(improvement.timestampSeconds)}</p>
+                <div className="space-y-2"><h3 className="font-semibold">{improvement.opportunity}</h3><p className="leading-7 text-muted-foreground">{improvement.suggestedEdit}</p></div>
+                <div className="space-y-2"><p className="text-sm font-medium">Expected audience effect</p><p className="leading-7 text-muted-foreground">{improvement.expectedAudienceEffect}</p></div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
       <section aria-labelledby="simulation-record" className="grid gap-8 border-y border-border py-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="max-w-2xl space-y-3">
           <h2 className="text-2xl font-semibold tracking-tight" id="simulation-record">Saved simulation record</h2>
@@ -77,6 +97,11 @@ export function AnalysisReport({ reportId }: AnalysisReportProps) {
       </section>
     </div>
   );
+}
+
+function VideoDnaRecord({ videoDna, explanations }: { videoDna: { hook: number; clarity: number; pacing: number; credibility: number; audienceRelevance: number; shareTrigger: number }; explanations: { hook: string; clarity: string; pacing: string; credibility: string; audienceRelevance: string; shareTrigger: string; visualThemes: string[]; spokenThemes: string[] } }) {
+  const signals = Object.entries(videoDna).map(([signal, score]) => ({ signal, score, explanation: explanations[signal as keyof typeof videoDna] }));
+  return <section aria-labelledby="video-dna-heading" className="space-y-5"><div className="max-w-2xl space-y-2"><h2 className="text-2xl font-semibold tracking-tight" id="video-dna-heading">Saved Video DNA</h2><p className="text-muted-foreground">The six content signals that informed this simulated cohort outcome.</p></div><dl className="grid gap-px border border-border bg-border md:grid-cols-2">{signals.map(({ signal, score, explanation }) => <div className="bg-background p-5" key={signal}><dt className="flex justify-between gap-4 font-medium capitalize"><span>{signal.replace(/([A-Z])/g, " $1")}</span><span>{Math.round(score * 100)}%</span></dt><dd className="mt-2 leading-7 text-muted-foreground">{explanation}</dd></div>)}</dl><p className="text-sm leading-6 text-muted-foreground">Visual themes: {explanations.visualThemes.join(", ")}. Spoken themes: {explanations.spokenThemes.join(", ")}.</p></section>;
 }
 
 function AnalysisReportLoading() {
@@ -125,4 +150,9 @@ function verdictInterpretation(verdict: "Breakout potential" | "Strong in target
 
 function formatReportDate(createdAt: number) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(createdAt);
+}
+
+function formatTimestamp(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 }
