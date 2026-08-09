@@ -48,6 +48,24 @@ const eventValidator = v.object({
   source: v.union(v.null(), v.literal("seed"), v.literal("share"), v.literal("recommendation")),
   sourcePersonaId: v.union(v.null(), v.id("cohortPersonas")),
   score: v.union(v.null(), v.number()),
+  action: v.optional(v.union(v.literal("noEngagement"), v.literal("watched"), v.literal("liked"), v.literal("commented"), v.literal("shared"))),
+  watchCompletion: v.optional(v.number()),
+  rationale: v.optional(v.string()),
+  comment: v.optional(v.union(v.null(), v.string())),
+});
+
+const personaValidator = v.object({
+  _id: v.id("cohortPersonas"),
+  personaIndex: v.number(),
+  audienceSegment: v.union(v.literal("inTarget"), v.literal("adjacent")),
+  ocean: v.object({ openness: v.number(), conscientiousness: v.number(), extraversion: v.number(), agreeableness: v.number(), neuroticism: v.number() }),
+  interests: v.array(v.string()),
+  position: v.object({ x: v.number(), y: v.number() }),
+});
+
+const connectionValidator = v.object({
+  fromPersonaId: v.id("cohortPersonas"),
+  toPersonaId: v.id("cohortPersonas"),
 });
 
 const reportValidator = v.object({
@@ -60,6 +78,8 @@ const reportValidator = v.object({
   stopReason: stopReasonValidator,
   createdAt: v.number(),
   events: v.array(eventValidator),
+  personas: v.array(personaValidator),
+  connections: v.array(connectionValidator),
   sourceUploadId: v.optional(v.id("reelUploads")),
   transcript: v.optional(v.string()),
   videoDnaExplanations: v.optional(v.object({ hook: v.string(), clarity: v.string(), pacing: v.string(), credibility: v.string(), audienceRelevance: v.string(), shareTrigger: v.string(), visualThemes: v.array(v.string()), spokenThemes: v.array(v.string()) })),
@@ -156,6 +176,16 @@ export const getForCurrentOwner = query({
       .query("analysisReportEvents")
       .withIndex("by_analysisReportId_and_order", (q) => q.eq("analysisReportId", report._id))
       .take(500);
+    const [personas, connections] = await Promise.all([
+      ctx.db
+        .query("cohortPersonas")
+        .withIndex("by_accountDnaId_and_cohortRevision_and_personaIndex", (q) => q.eq("accountDnaId", report.accountDnaId).eq("cohortRevision", report.cohortRevision))
+        .take(100),
+      ctx.db
+        .query("cohortConnections")
+        .withIndex("by_accountDnaId_and_cohortRevision", (q) => q.eq("accountDnaId", report.accountDnaId).eq("cohortRevision", report.cohortRevision))
+        .take(300),
+    ]);
     return {
       _id: report._id,
       seed: report.seed,
@@ -177,6 +207,22 @@ export const getForCurrentOwner = query({
         source: event.source,
         sourcePersonaId: event.sourcePersonaId,
         score: event.score,
+        ...(event.action ? { action: event.action } : {}),
+        ...(event.watchCompletion !== undefined ? { watchCompletion: event.watchCompletion } : {}),
+        ...(event.rationale ? { rationale: event.rationale } : {}),
+        ...(event.comment !== undefined ? { comment: event.comment } : {}),
+      })),
+      personas: personas.map((persona) => ({
+        _id: persona._id,
+        personaIndex: persona.personaIndex,
+        audienceSegment: persona.audienceSegment,
+        ocean: persona.ocean,
+        interests: persona.interests,
+        position: persona.position,
+      })),
+      connections: connections.map((connection) => ({
+        fromPersonaId: connection.fromPersonaId,
+        toPersonaId: connection.toPersonaId,
       })),
     };
   },

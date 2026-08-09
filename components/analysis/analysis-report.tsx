@@ -2,6 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { ArrowRight, FileQuestion, RotateCcw } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import type { Id } from "@/convex/_generated/dataModel";
@@ -12,6 +13,11 @@ import { cn } from "@/lib/utils";
 type AnalysisReportProps = {
   reportId: Id<"analysisReports">;
 };
+
+const ContagionReplay = dynamic(
+  () => import("@/components/analysis/contagion-replay").then((module) => module.ContagionReplay),
+  { ssr: false, loading: () => <div aria-busy="true" className="h-120 animate-pulse border border-border bg-card" /> },
+);
 
 export function AnalysisReport({ reportId }: AnalysisReportProps) {
   const report = useQuery(api.analysisReports.getForCurrentOwner, { reportId });
@@ -79,6 +85,13 @@ export function AnalysisReport({ reportId }: AnalysisReportProps) {
           </ol>
         </section>
       ) : null}
+
+      <ContagionReplay
+        cascadeDepth={report.metrics.cascadeDepth}
+        connections={report.connections}
+        events={report.events}
+        personas={report.personas}
+      />
 
       <section aria-labelledby="simulation-record" className="grid gap-8 border-y border-border py-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="max-w-2xl space-y-3">

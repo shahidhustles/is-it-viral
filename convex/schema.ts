@@ -192,6 +192,10 @@ export default defineSchema({
     source: v.union(v.null(), v.literal("seed"), v.literal("share"), v.literal("recommendation")),
     sourcePersonaId: v.union(v.null(), v.id("cohortPersonas")),
     score: v.union(v.null(), v.number()),
+    action: v.optional(v.union(v.literal("noEngagement"), v.literal("watched"), v.literal("liked"), v.literal("commented"), v.literal("shared"))),
+    watchCompletion: v.optional(v.number()),
+    rationale: v.optional(v.string()),
+    comment: v.optional(v.union(v.null(), v.string())),
   })
     .index("by_analysisReportId_and_order", ["analysisReportId", "order"]),
 });

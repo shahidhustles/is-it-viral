@@ -52,6 +52,11 @@ describe("analysis report simulation", () => {
     expect(report?.events).toEqual(expect.arrayContaining([
       expect.objectContaining({ round: 1, type: "exposed", source: "seed" }),
     ]));
+    expect(report?.personas).toHaveLength(100);
+    expect(report?.connections.length).toBeGreaterThan(0);
+    expect(report?.events).toEqual(expect.arrayContaining([
+      expect.objectContaining({ action: expect.any(String), rationale: expect.any(String), watchCompletion: expect.any(Number) }),
+    ]));
     await expect(other.query(api.analysisReports.getForCurrentOwner, { reportId: created.reportId })).resolves.toBeNull();
   });
 });

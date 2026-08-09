@@ -39,6 +39,32 @@ describe("runSimulation", () => {
     expect(first.events.every((event) => event.type !== "exposed" || event.source === "seed" || event.source === "share" || event.source === "recommendation")).toBe(true);
   });
 
+  it("records a deterministic, inspectable reaction for every exposed persona", () => {
+    const result = runSimulation(cohort, videoDna, "inspectable-reactions");
+    const reactionEvents = result.events.filter((event) => event.type === "shared" || event.type === "didNotShare");
+
+    expect(reactionEvents).toHaveLength(result.metrics.totalReach);
+    expect(reactionEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({ action: "shared", rationale: expect.any(String), watchCompletion: expect.any(Number) }),
+    ]));
+    expect(reactionEvents.every((event) => event.action === "commented" ? Boolean(event.comment) : event.comment === null)).toBe(true);
+  });
+
+  it("records no engagement when an exposed persona does not clear the viewing threshold", () => {
+    const lowSignalResult = runSimulation(
+      {
+        personas: cohort.personas.slice(0, 10).map((persona) => ({ ...persona, affinityVector: [0], sharingThreshold: 0.99 })),
+        connections: [],
+      },
+      { hook: 0, clarity: 0, pacing: 0, credibility: 0, audienceRelevance: 0, shareTrigger: 0 },
+      "no-engagement-seed",
+    );
+
+    expect(lowSignalResult.events.filter((event) => event.type === "didNotShare")).toEqual(expect.arrayContaining([
+      expect.objectContaining({ action: "noEngagement", comment: null }),
+    ]));
+  });
+
   it("records an early stop when fewer than two new personas can be exposed", () => {
     const result = runSimulation(
       { personas: cohort.personas.slice(0, 10), connections: [] },

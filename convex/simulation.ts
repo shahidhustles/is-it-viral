@@ -43,6 +43,10 @@ export type SimulationEvent<PersonaId extends string = string> = {
   source: "seed" | "share" | "recommendation" | null;
   sourcePersonaId: PersonaId | null;
   score: number | null;
+  action?: "noEngagement" | "watched" | "liked" | "commented" | "shared";
+  watchCompletion?: number;
+  rationale?: string;
+  comment?: string | null;
 };
 
 export type SimulationMetrics = {
@@ -95,6 +99,7 @@ export function runSimulation<PersonaId extends string>(
   }));
   let cascadeDepth = 0;
   let shares = 0;
+  const sharedScores = new Map<PersonaId, number>();
   let stopReason: SimulationResult<PersonaId>["stopReason"] = "maximumRoundsReached";
 
   for (let round = 1; round <= MAX_ROUNDS && currentRound.length > 0; round += 1) {
@@ -116,8 +121,15 @@ export function runSimulation<PersonaId extends string>(
         score: null,
       });
 
-      const engagementScore = calculateEngagementScore(persona, videoDna, random());
-      const type = engagementScore >= persona.sharingThreshold ? "shared" : "didNotShare";
+      const engagementScore = calculateEngagementScore(
+        persona,
+        videoDna,
+        random(),
+        exposure.source,
+        exposure.sourcePersonaId ? sharedScores.get(exposure.sourcePersonaId) : undefined,
+      );
+      const reaction = derivePersonaReaction(persona, engagementScore);
+      const type = reaction.action === "shared" ? "shared" : "didNotShare";
       events.push({
         order: events.length,
         round,
@@ -126,10 +138,12 @@ export function runSimulation<PersonaId extends string>(
         source: null,
         sourcePersonaId: null,
         score: engagementScore,
+        ...reaction,
       });
 
       if (type === "shared") {
         shares += 1;
+        sharedScores.set(persona.id, engagementScore);
         sharers.push({ personaId: persona.id, score: engagementScore });
       }
     }
@@ -160,6 +174,36 @@ export function runSimulation<PersonaId extends string>(
     verdict: deriveVerdict(metrics, stopReason),
     stopReason,
   };
+}
+
+function derivePersonaReaction(persona: SimulationPersona, score: number) {
+  const action = score >= persona.sharingThreshold
+    ? "shared"
+    : score >= 0.78
+      ? "commented"
+        : score >= 0.58
+          ? "liked"
+          : score >= 0.38
+            ? "watched"
+            : "noEngagement";
+  const watchCompletion = round(clamp(0.28 + score * 0.7 + persona.ocean.conscientiousness * 0.06));
+  const primaryInterest = persona.interests[0] ?? "this topic";
+  const rationale = action === "shared"
+    ? `The fit score cleared this persona's sharing threshold, reinforced by interest in ${primaryInterest}.`
+    : action === "commented"
+      ? `The fit score prompted a response around ${primaryInterest}, but did not clear the sharing threshold.`
+      : action === "liked"
+      ? `The fit score showed interest in ${primaryInterest}, without enough momentum to share.`
+        : action === "watched"
+          ? `The fit score supported viewing, but not a stronger engagement action for ${primaryInterest}.`
+          : `The fit score did not create a recorded engagement action around ${primaryInterest}.`;
+
+  return {
+    action,
+    watchCompletion,
+    rationale,
+    comment: action === "commented" ? `Worth considering for ${primaryInterest}.` : null,
+  } as const;
 }
 
 function selectNextExposures<PersonaId extends string>({
@@ -205,7 +249,13 @@ function selectNextExposures<PersonaId extends string>({
     .map(({ personaId, source, sourcePersonaId }) => ({ personaId, source, sourcePersonaId }));
 }
 
-function calculateEngagementScore(persona: SimulationPersona, videoDna: VideoDna, noise: number) {
+function calculateEngagementScore(
+  persona: SimulationPersona,
+  videoDna: VideoDna,
+  noise: number,
+  source: "seed" | "share" | "recommendation",
+  priorShareScore: number | undefined,
+) {
   const videoQuality = (
     videoDna.hook * 0.2 +
     videoDna.clarity * 0.16 +
@@ -217,7 +267,9 @@ function calculateEngagementScore(persona: SimulationPersona, videoDna: VideoDna
   const personaAffinity = average(persona.affinityVector);
   const socialDrive = persona.ocean.extraversion * 0.12 + persona.ocean.openness * 0.08;
   const segmentFit = persona.audienceSegment === "inTarget" ? 0.08 : -0.03;
-  return round(clamp(videoQuality * 0.58 + personaAffinity * 0.2 + socialDrive + segmentFit + (noise - 0.5) * 0.08));
+  const exposureLift = source === "share" ? 0.03 : source === "recommendation" ? 0.015 : 0;
+  const socialProof = priorShareScore ? priorShareScore * 0.04 : 0;
+  return round(clamp(videoQuality * 0.58 + personaAffinity * 0.2 + socialDrive + segmentFit + exposureLift + socialProof + (noise - 0.5) * 0.08));
 }
 
 function recommendationScore(persona: SimulationPersona, videoDna: VideoDna, noise: number) {
