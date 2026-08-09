@@ -2,7 +2,7 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { BarChart3, ChevronUp, Fingerprint, Home, LogOut, Settings, Sparkles, Users } from "lucide-react";
+import { BarChart3, ChevronUp, Fingerprint, Home, LogOut, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -28,7 +29,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { api } from "@/convex/_generated/api";
@@ -40,6 +40,8 @@ const navigation = [
   { href: "/audience", label: "Audience", icon: Users },
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ] as const;
+
+const activeNavigationClass = "border border-foreground text-foreground shadow-[var(--shadow-action)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
 
 export function DashboardHome() {
   const account = useQuery(api.accountDna.getForCurrentOwner);
@@ -137,7 +139,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     render={<Link href={href} />}
                     className={cn(
                       "h-11 rounded-[var(--radius-control)]",
-                      isActive && "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)] hover:bg-primary hover:text-foreground",
+                      isActive && activeNavigationClass,
                     )}
                   >
                     <Icon aria-hidden="true" />
@@ -153,22 +155,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <SidebarFooter className="p-5 pt-0">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname === "/settings"}
-                render={<Link href="/settings" />}
-                className={cn(
-                  "h-11 rounded-[var(--radius-control)]",
-                  pathname === "/settings" && "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)] hover:bg-primary hover:text-foreground",
-                )}
-              >
-                <Settings aria-hidden="true" />
-                <span>Account/settings</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <SidebarSeparator className="mx-0" />
-          <SidebarMenu>
-            <SidebarMenuItem>
               <DropdownMenu>
                 <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="h-12 rounded-[var(--radius-control)] data-open:bg-background" />}>
                   <Avatar>
@@ -179,12 +165,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   <ChevronUp aria-hidden="true" className="ml-auto" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="right" sideOffset={8}>
-                  <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => void signOut({ redirectUrl: "/" })}>
-                    <LogOut aria-hidden="true" />
-                    Sign out
-                  </DropdownMenuItem>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => void signOut({ redirectUrl: "/" })}>
+                      <LogOut aria-hidden="true" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
             </SidebarMenuItem>
