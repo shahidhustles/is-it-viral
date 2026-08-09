@@ -8,7 +8,7 @@ import { internal } from "./_generated/api";
 import { internalAction } from "./_generated/server";
 import { v } from "convex/values";
 
-const MODEL_ID = "openai/gpt-5.6-luna";
+const MODEL_ID = "meta/muse-spark-1.1";
 const REASONING_EFFORT = "medium";
 const PROMPT_VERSION = "cohort-archetypes-v1";
 const SCHEMA_VERSION = "cohort-archetypes-v1";
