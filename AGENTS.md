@@ -36,5 +36,22 @@ When writing, reviewing, or refactoring React/Next.js code, use the [vercel-reac
 - Do not define React components inside other components.
 - Keep client-component props small and serializable; do not pass unnecessary server data to the browser.
 
+## Clerk
+When writing, reviewing, or refactoring clerk + Next.js code, use the [clerk-nextjs-patterns](.agents/skills/clerk-nextjs-patterns) skill.
+
 
 ### Use pnpm instead of npm.
+
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->

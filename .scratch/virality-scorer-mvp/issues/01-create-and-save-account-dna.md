@@ -52,3 +52,4 @@ Use a minimal private-app header rather than the future dashboard sidebar; the c
 ### Layout and accessibility
 
 Desktop uses one focused form column with a quiet right-hand ledger note. Mobile collapses to one ordered stream. Keep Back/Continue at the form's end, keyboard reachable, with visible focus and announced step progress.
+
