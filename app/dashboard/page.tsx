@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -18,9 +18,9 @@ export default async function DashboardPage() {
         <p className="max-w-xl text-lg leading-8 text-muted-foreground">
           Future assessments will use this stable simulated cohort as advisory context. Your publishing decision remains yours.
         </p>
-        <Button render={<Link href="/analyze" />} size="lg">
+        <Link className={buttonVariants({ size: "lg" })} href="/analyze">
           Analyze a reel
-        </Button>
+        </Link>
       </section>
     </main>
   );
