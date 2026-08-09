@@ -2,7 +2,7 @@ import {
   clerkMiddleware,
   createRouteMatcher,
 } from "@clerk/nextjs/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const isPrivateRoute = createRouteMatcher([
   "/onboarding(.*)",
@@ -11,10 +11,20 @@ const isPrivateRoute = createRouteMatcher([
   "/analyze(.*)",
 ]);
 
+const isAuthenticationRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
+
 export async function protectPrivateRoutes(
-  auth: { protect: () => Promise<unknown> },
+  auth: { protect: () => Promise<unknown>; (): Promise<{ userId: string | null }> },
   request: NextRequest,
 ) {
+  const { userId } = await auth();
+  if (userId && isAuthenticationRoute(request)) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   if (isPrivateRoute(request)) {
     await auth.protect();
   }
