@@ -17,6 +17,8 @@ describe("Account DNA onboarding", () => {
       replace: false,
     };
 
+    await expect(t.query(api.accountDna.getForCurrentOwner)).resolves.toBeNull();
+
     await expect(t.mutation(api.accountDna.saveAccountDna, input)).rejects.toThrow(
       "Sign in to save your Account DNA.",
     );

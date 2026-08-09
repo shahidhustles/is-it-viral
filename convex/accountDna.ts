@@ -33,7 +33,7 @@ export const getForCurrentOwner = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Sign in to access your Account DNA.");
+      return null;
     }
 
     const account = await ctx.db
