@@ -41,7 +41,7 @@ const navigation = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ] as const;
 
-const activeNavigationClass = "border border-foreground text-foreground shadow-[var(--shadow-action)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+const activeNavigationClass = "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)] hover:bg-primary hover:text-foreground";
 
 export function DashboardHome() {
   const account = useQuery(api.accountDna.getForCurrentOwner);
