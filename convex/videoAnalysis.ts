@@ -36,7 +36,7 @@ export const videoAnalysisSchema = z.object({
 });
 
 export type VideoAnalysis = z.infer<typeof videoAnalysisSchema>;
-type VisualAnalysisBoundary = (input: { transcript: string; frames: Array<{ second: number; url: string }> }) => Promise<unknown>;
+type VisualAnalysisBoundary = (input: { transcript: string; frames: Array<{ second: number; data: Uint8Array }> }) => Promise<unknown>;
 
 export const analyzeUpload = internalAction({
   args: { uploadId: v.id("reelUploads") },
@@ -51,12 +51,12 @@ export const analyzeUpload = internalAction({
       const transcription = await transcribe({ model: gateway.transcription(TRANSCRIPTION_MODEL), audio: new Uint8Array(await audio.arrayBuffer()) });
       if (!transcription.text.trim()) throw new Error("We could not find spoken audio in this reel.");
       await ctx.runMutation(internal.reelUploads.setStatus, { uploadId: args.uploadId, status: "analyzing" });
-      const frameUrls = await Promise.all(input.frameStorageIds.map(async (frame) => {
-        const url = await ctx.storage.getUrl(frame.storageId);
-        if (!url) throw new Error("A sampled frame is unavailable.");
-        return { second: frame.second, url };
+      const frames = await Promise.all(input.frameStorageIds.map(async (frame) => {
+        const blob = await ctx.storage.get(frame.storageId);
+        if (!blob) throw new Error("A sampled frame is unavailable.");
+        return { second: frame.second, data: new Uint8Array(await blob.arrayBuffer()) };
       }));
-      const analysis = await analyzeVideoDna({ transcript: transcription.text, frames: frameUrls });
+      const analysis = await analyzeVideoDna({ transcript: transcription.text, frames });
       await ctx.runMutation(internal.analysisReports.createFromMediaAnalysis, { uploadId: args.uploadId, transcript: transcription.text, ...analysis });
     } catch (error) {
       console.error("Video analysis failed", error);
@@ -66,17 +66,17 @@ export const analyzeUpload = internalAction({
   },
 });
 
-export async function analyzeVideoDna(input: { transcript: string; frames: Array<{ second: number; url: string }> }, requestAnalysis: VisualAnalysisBoundary = requestVisualAnalysis): Promise<VideoAnalysis> {
+export async function analyzeVideoDna(input: { transcript: string; frames: Array<{ second: number; data: Uint8Array }> }, requestAnalysis: VisualAnalysisBoundary = requestVisualAnalysis): Promise<VideoAnalysis> {
   return videoAnalysisSchema.parse(await requestAnalysis(input));
 }
 
-async function requestVisualAnalysis(input: { transcript: string; frames: Array<{ second: number; url: string }> }) {
+async function requestVisualAnalysis(input: { transcript: string; frames: Array<{ second: number; data: Uint8Array }> }) {
   const result = await generateText({
     model: gateway(VISUAL_MODEL),
     output: Output.object({ schema: videoAnalysisSchema, name: "video_dna" }),
     messages: [{ role: "user", content: [
       { type: "text", text: `Assess this short Instagram-style reel for a synthetic audience simulation. The frames are sampled exactly once per second and arrive in chronological order. Use both the frames and transcript. Score each signal from 0 to 1. Give exactly three prioritized, timestamped edits; each must state the observed opportunity, a concrete edit, and the expected audience effect. Do not promise platform performance.\n\nTranscript:\n${input.transcript}` },
-      ...input.frames.map((frame) => ({ type: "file" as const, data: new URL(frame.url), mediaType: "image/jpeg", filename: `frame-${frame.second}s.jpg` })),
+      ...input.frames.map((frame) => ({ type: "file" as const, data: frame.data, mediaType: "image/jpeg", filename: `frame-${frame.second}s.jpg` })),
     ] }],
   });
   return result.output;

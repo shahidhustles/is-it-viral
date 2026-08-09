@@ -14,7 +14,7 @@ const validAnalysis = {
 
 describe("Video DNA model boundary", () => {
   it("accepts a validated model response without contacting a vendor", async () => {
-    await expect(analyzeVideoDna({ transcript: "Try this quick dinner.", frames: [{ second: 0, url: "https://example.test/frame.jpg" }] }, async () => validAnalysis)).resolves.toEqual(validAnalysis);
+    await expect(analyzeVideoDna({ transcript: "Try this quick dinner.", frames: [{ second: 0, data: new Uint8Array([1, 2, 3]) }] }, async () => validAnalysis)).resolves.toEqual(validAnalysis);
   });
 
   it("rejects malformed model data before it can reach the saved simulation", async () => {
