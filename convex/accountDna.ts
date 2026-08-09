@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 
 import { cohortSeedFor, generateCohort, validateArchetypes } from "./cohort";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 
@@ -24,6 +24,20 @@ const archetypeInput = v.object({
     neuroticism: v.number(),
   }),
   interests: v.array(v.string()),
+});
+
+const cohortArchetype = archetypeInput.extend({
+  archetypeIndex: v.number(),
+});
+
+const cohortPersona = v.object({
+  personaIndex: v.number(),
+  ocean: archetypeInput.fields.ocean,
+  connectionCount: v.number(),
+});
+
+const audienceArchetype = cohortArchetype.extend({
+  personas: v.array(cohortPersona),
 });
 
 const cohortLifecycle = v.object({
@@ -69,33 +83,109 @@ export const getForCurrentOwner = query({
       return null;
     }
 
+    return accountDnaForClient(account);
+  },
+});
+
+function accountDnaForClient(account: Doc<"accountDnas">) {
+  return {
+    _id: account._id,
+    niche: account.niche,
+    intendedAudience: account.intendedAudience,
+    primaryLanguage: account.primaryLanguage,
+    region: account.region,
+    revision: account.revision,
+    cohort: {
+      archetypeCount: account.archetypeCount,
+      personaCount: account.personaCount,
+      inTargetCount: account.inTargetCount,
+      adjacentCount: account.adjacentCount,
+      networkConnectionCount: account.networkConnectionCount,
+    },
+    generation: {
+      status: account.cohortStatus ?? "ready",
+      error: account.cohortError ?? null,
+      generatedAt: account.cohortGeneratedAt ?? null,
+      provenance: account.cohortModelId
+        ? {
+            modelId: account.cohortModelId,
+            reasoningEffort: account.cohortReasoningEffort ?? "medium",
+            promptVersion: account.cohortPromptVersion ?? "legacy",
+            schemaVersion: account.cohortSchemaVersion ?? "legacy",
+          }
+        : null,
+    },
+  };
+}
+
+export const getAudienceLedgerForCurrentOwner = query({
+  args: {},
+  returns: v.union(v.null(), accountDnaResult.extend({
+    archetypes: v.array(audienceArchetype),
+  })),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const account = await ctx.db
+      .query("accountDnas")
+      .withIndex("by_ownerTokenIdentifier", (q) =>
+        q.eq("ownerTokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!account) return null;
+
+    const baseResult = accountDnaForClient(account);
+    if (account.cohortStatus !== "ready") {
+      return { ...baseResult, archetypes: [] };
+    }
+
+    const [archetypeRows, personaRows, connectionRows] = await Promise.all([
+      ctx.db
+        .query("cohortArchetypes")
+        .withIndex("by_accountDnaId_and_cohortRevision", (q) =>
+          q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision),
+        )
+        .take(10),
+      ctx.db
+        .query("cohortPersonas")
+        .withIndex("by_accountDnaId_and_cohortRevision_and_personaIndex", (q) =>
+          q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision),
+        )
+        .take(100),
+      ctx.db
+        .query("cohortConnections")
+        .withIndex("by_accountDnaId_and_cohortRevision", (q) =>
+          q.eq("accountDnaId", account._id).eq("cohortRevision", account.revision),
+        )
+        .take(300),
+    ]);
+    const connectionCounts = new Map<Id<"cohortPersonas">, number>();
+    for (const connection of connectionRows) {
+      connectionCounts.set(connection.fromPersonaId, (connectionCounts.get(connection.fromPersonaId) ?? 0) + 1);
+      connectionCounts.set(connection.toPersonaId, (connectionCounts.get(connection.toPersonaId) ?? 0) + 1);
+    }
+    const personasByArchetype = new Map<Id<"cohortArchetypes">, typeof personaRows>();
+    for (const persona of personaRows) {
+      const personas = personasByArchetype.get(persona.archetypeId) ?? [];
+      personas.push(persona);
+      personasByArchetype.set(persona.archetypeId, personas);
+    }
+
     return {
-      _id: account._id,
-      niche: account.niche,
-      intendedAudience: account.intendedAudience,
-      primaryLanguage: account.primaryLanguage,
-      region: account.region,
-      revision: account.revision,
-      cohort: {
-        archetypeCount: account.archetypeCount,
-        personaCount: account.personaCount,
-        inTargetCount: account.inTargetCount,
-        adjacentCount: account.adjacentCount,
-        networkConnectionCount: account.networkConnectionCount,
-      },
-      generation: {
-        status: account.cohortStatus ?? "ready",
-        error: account.cohortError ?? null,
-        generatedAt: account.cohortGeneratedAt ?? null,
-        provenance: account.cohortModelId
-          ? {
-              modelId: account.cohortModelId,
-              reasoningEffort: account.cohortReasoningEffort ?? "medium",
-              promptVersion: account.cohortPromptVersion ?? "legacy",
-              schemaVersion: account.cohortSchemaVersion ?? "legacy",
-            }
-          : null,
-      },
+      ...baseResult,
+      archetypes: archetypeRows.map((archetype) => ({
+        archetypeIndex: archetype.archetypeIndex,
+        name: archetype.name,
+        audienceSegment: archetype.audienceSegment,
+        ocean: archetype.ocean,
+        interests: archetype.interests,
+        personas: (personasByArchetype.get(archetype._id) ?? []).map((persona) => ({
+          personaIndex: persona.personaIndex,
+          ocean: persona.ocean,
+          connectionCount: connectionCounts.get(persona._id) ?? 0,
+        })),
+      })),
     };
   },
 });

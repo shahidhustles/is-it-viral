@@ -1,12 +1,14 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, ArrowRight, Check, Fingerprint } from "lucide-react";
+import { ArrowLeft, ArrowRight, Fingerprint } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { StepIndicator } from "@/components/onboarding/step-indicator";
+import { AccountDnaRecordRow } from "@/components/audience/account-dna-record";
+import { AudienceLedger } from "@/components/audience/audience-ledger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +55,9 @@ const emptyForm: AccountDnaForm = {
 export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashboard?: boolean }) {
   const router = useRouter();
   const savedAccountDna = useQuery(api.accountDna.getForCurrentOwner);
+  const audienceLedger = useQuery(api.accountDna.getAudienceLedgerForCurrentOwner);
   const saveAccountDna = useMutation(api.accountDna.saveAccountDna);
+  const retryCohortGeneration = useMutation(api.accountDna.retryCohortGeneration);
   const [form, setForm] = useState<AccountDnaForm>(emptyForm);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [step, setStep] = useState(0);
@@ -61,59 +65,54 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isReplaceDialogOpen, setIsReplaceDialogOpen] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
 
   if (savedAccountDna === undefined) {
     return <OnboardingLoadingState />;
   }
 
   if (savedAccountDna && !isEditing) {
+    if (audienceLedger === undefined || !audienceLedger) {
+      return <OnboardingLoadingState />;
+    }
+
     return (
-      <OnboardingFrame currentStep={2} withinDashboard={withinDashboard}>
-        <section aria-labelledby="saved-account-dna-heading" className="space-y-8">
-          <div className="space-y-3">
-            <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Check aria-hidden="true" className="size-4" />
-              Account DNA saved
-            </p>
-            <h1 id="saved-account-dna-heading" className="text-4xl font-semibold tracking-tight md:text-5xl">
-              {savedAccountDna.generation.status === "ready" ? "Your audience record is ready." : "Your audience record is being prepared."}
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              {savedAccountDna.generation.status === "ready"
-                ? "This saved cohort will stay consistent across future reel assessments until you intentionally replace it."
-                : savedAccountDna.generation.status === "failed"
-                  ? "We could not build the cohort yet. Your Account DNA is still saved, and you can retry from Home."
-                  : "We’re building the stable simulated cohort for this audience. Reel analysis becomes available when it is ready."}
-            </p>
-          </div>
-
-          <dl className="divide-y divide-border border-y border-border">
-            <SummaryRow label="Account focus" value={savedAccountDna.niche} />
-            <SummaryRow label="Intended audience" value={savedAccountDna.intendedAudience} />
-            <SummaryRow label="Primary language" value={savedAccountDna.primaryLanguage} />
-            <SummaryRow label="Region" value={savedAccountDna.region} />
-          </dl>
-
-          <Button
-            onClick={() => {
-              setForm({
-                niche: savedAccountDna.niche,
-                intendedAudience: savedAccountDna.intendedAudience,
-                primaryLanguage: savedAccountDna.primaryLanguage,
-                region: savedAccountDna.region,
-              });
-              setErrors({});
-              setSaveError(null);
-              setStep(0);
-              setIsEditing(true);
-            }}
-            size="lg"
-          >
-            Edit Account DNA
-          </Button>
-        </section>
+      <OnboardingFrame currentStep={2} showSteps={false} withinDashboard={withinDashboard}>
+        <AudienceLedger
+          account={audienceLedger}
+          isRetrying={isRetrying}
+          retryError={retryError}
+          onEdit={() => beginEditing(savedAccountDna)}
+          onRetry={() => void retryGeneration()}
+        />
       </OnboardingFrame>
     );
+  }
+
+  function beginEditing(account: NonNullable<typeof savedAccountDna>) {
+    setForm({
+      niche: account.niche,
+      intendedAudience: account.intendedAudience,
+      primaryLanguage: account.primaryLanguage,
+      region: account.region,
+    });
+    setErrors({});
+    setSaveError(null);
+    setStep(0);
+    setIsEditing(true);
+  }
+
+  async function retryGeneration() {
+    setIsRetrying(true);
+    setRetryError(null);
+    try {
+      await retryCohortGeneration();
+    } catch (error) {
+      setRetryError(error instanceof Error ? error.message : "We could not restart cohort generation. Please try again.");
+    } finally {
+      setIsRetrying(false);
+    }
   }
 
   const updateField = (field: FieldName, value: string) => {
@@ -268,8 +267,8 @@ export function AccountDnaOnboarding({ withinDashboard = false }: { withinDashbo
   );
 }
 
-function OnboardingFrame({ children, currentStep, withinDashboard }: { children: ReactNode; currentStep: number; withinDashboard: boolean }) {
-  const content = (
+function OnboardingFrame({ children, currentStep, showSteps = true, withinDashboard }: { children: ReactNode; currentStep: number; showSteps?: boolean; withinDashboard: boolean }) {
+  const content = showSteps ? (
     <div className="mx-auto grid max-w-[var(--page-max-width)] gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-20">
       <div className="space-y-10">
         <StepIndicator currentStep={currentStep} steps={steps} />
@@ -277,6 +276,8 @@ function OnboardingFrame({ children, currentStep, withinDashboard }: { children:
       </div>
       <LedgerNote />
     </div>
+  ) : (
+    <div className="mx-auto max-w-[var(--page-max-width)]">{children}</div>
   );
 
   if (withinDashboard) {
@@ -400,10 +401,10 @@ function ReviewStep({ form }: { form: AccountDnaForm }) {
   return (
     <div className="max-w-2xl space-y-6">
       <dl className="divide-y divide-border border-y border-border">
-        <SummaryRow label="Account focus" value={form.niche} />
-        <SummaryRow label="Intended audience" value={form.intendedAudience} />
-        <SummaryRow label="Primary language" value={form.primaryLanguage} />
-        <SummaryRow label="Region" value={form.region} />
+        <AccountDnaRecordRow label="Account focus" value={form.niche} />
+        <AccountDnaRecordRow label="Intended audience" value={form.intendedAudience} />
+        <AccountDnaRecordRow label="Primary language" value={form.primaryLanguage} />
+        <AccountDnaRecordRow label="Region" value={form.region} />
       </dl>
       <div className="border border-border bg-card p-6">
         <p className="font-medium">A record for guidance, not a promise.</p>
@@ -431,14 +432,6 @@ function LedgerNote() {
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-      <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
-      <dd className="text-sm leading-6 text-foreground">{value}</dd>
-    </div>
-  );
-}
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) {

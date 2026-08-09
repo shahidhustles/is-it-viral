@@ -63,6 +63,10 @@ export default defineSchema({
     interests: v.array(v.string()),
   })
     .index("by_accountDnaId", ["accountDnaId"])
+    .index("by_accountDnaId_and_cohortRevision", [
+      "accountDnaId",
+      "cohortRevision",
+    ])
     .index("by_accountDnaId_and_archetypeIndex", [
       "accountDnaId",
       "archetypeIndex",

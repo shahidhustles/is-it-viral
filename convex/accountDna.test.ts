@@ -62,6 +62,15 @@ describe("Account DNA onboarding", () => {
       generation: { status: "ready", provenance: { modelId: "test-model", reasoningEffort: "medium" } },
     });
     expect(saved?.cohort.networkConnectionCount).toBeGreaterThan(0);
+    const audienceLedger = await owner.query(api.accountDna.getAudienceLedgerForCurrentOwner);
+    expect(audienceLedger?.archetypes).toHaveLength(10);
+    expect(audienceLedger?.archetypes[0]).toMatchObject({
+      name: "Curious cook",
+      audienceSegment: "inTarget",
+      interests: ["cooking", "useful advice"],
+    });
+    expect(audienceLedger?.archetypes[0].personas).toHaveLength(10);
+    expect(audienceLedger?.archetypes[0].personas[0].connectionCount).toBeGreaterThan(0);
 
     const persistedCohort = await t.run(async (ctx) => {
       const account = await ctx.db
