@@ -1,11 +1,36 @@
 "use client";
 
+import { useClerk, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { BarChart3, Fingerprint, Home, Settings, Sparkles, Users } from "lucide-react";
+import { BarChart3, ChevronUp, Fingerprint, Home, LogOut, Settings, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +39,6 @@ const navigation = [
   { href: "/analyze", label: "Analyze a reel", icon: Sparkles },
   { href: "/audience", label: "Audience", icon: Users },
   { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/settings", label: "Account/settings", icon: Settings },
 ] as const;
 
 export function DashboardHome() {
@@ -78,45 +102,105 @@ function CohortStatus({ account }: { account: { generation: { status: "pending" 
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const userName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Your account";
+  const initials = userName
+    .split(" ")
+    .map((part) => part.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <main className="min-h-screen bg-background lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="border-b border-border bg-card lg:min-h-screen lg:border-r lg:border-b-0">
-        <div className="flex h-full flex-col p-5">
+    <SidebarProvider>
+      <Sidebar className="border-border bg-card" collapsible="offcanvas">
+        <SidebarHeader className="p-5">
           <Link className="flex items-center gap-3 font-semibold tracking-tight" href="/dashboard">
             <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border border-foreground bg-primary">
               <Fingerprint aria-hidden="true" className="size-4" />
             </span>
             Is It Viral
           </Link>
-          <nav aria-label="Application" className="mt-8 flex gap-1 overflow-x-auto lg:flex-col">
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu aria-label="Application">
             {navigation.map(({ href, label, icon: Icon }) => {
               const isActive = pathname === href;
 
               return (
-                <Link
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex min-h-11 shrink-0 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
-                    isActive
-                      ? "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)]"
-                      : "border border-transparent hover:bg-background",
-                  )}
-                  href={href}
-                  key={href}
-                >
-                  <Icon aria-hidden="true" className="size-4" />
-                  {label}
-                </Link>
+                <SidebarMenuItem key={href}>
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    render={<Link href={href} />}
+                    className={cn(
+                      "h-11 rounded-[var(--radius-control)]",
+                      isActive && "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)] hover:bg-primary hover:text-foreground",
+                    )}
+                  >
+                    <Icon aria-hidden="true" />
+                    <span>{label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               );
             })}
-          </nav>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter className="p-5 pt-0">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={pathname === "/settings"}
+                render={<Link href="/settings" />}
+                className={cn(
+                  "h-11 rounded-[var(--radius-control)]",
+                  pathname === "/settings" && "border border-foreground bg-primary text-foreground shadow-[var(--shadow-action)] hover:bg-primary hover:text-foreground",
+                )}
+              >
+                <Settings aria-hidden="true" />
+                <span>Account/settings</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <SidebarSeparator className="mx-0" />
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="h-12 rounded-[var(--radius-control)] data-open:bg-background" />}>
+                  <Avatar>
+                    <AvatarImage alt={userName} src={user?.imageUrl} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <span>{userName}</span>
+                  <ChevronUp aria-hidden="true" className="ml-auto" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="right" sideOffset={8}>
+                  <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => void signOut({ redirectUrl: "/" })}>
+                    <LogOut aria-hidden="true" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-14 items-center border-b border-border px-5 md:hidden">
+          <SidebarTrigger />
+          <span className="ml-3 font-semibold tracking-tight">Is It Viral</span>
+        </header>
+        <div className="px-5 py-10 sm:px-8 md:py-14">
+          <div className="mx-auto max-w-[var(--page-max-width)]">{children}</div>
         </div>
-      </aside>
-      <div className="px-5 py-10 sm:px-8 md:py-14">
-        <div className="mx-auto max-w-[var(--page-max-width)]">{children}</div>
-      </div>
-    </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
