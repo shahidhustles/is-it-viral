@@ -23,7 +23,7 @@ import { FeatureCarousel, type FeatureCarouselItem } from "./feature-carousel";
 import { advisoryDisclosure, getLandingCta, type LandingCta } from "./landing-cta";
 
 
-const demoVideoUrl = "";
+const demoVideoUrl = "https://www.youtube.com/watch?v=mp1UWvE5WUk";
 
 const landingNavigation = [
   { href: "#first-audience", label: "First audience" },
