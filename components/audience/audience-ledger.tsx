@@ -106,7 +106,7 @@ function ReadyAudienceLedger({ account, onEdit }: Pick<AudienceLedgerProps, "acc
           <h2 className="text-2xl font-semibold tracking-tight" id="archetypes-heading">The people represented in this cohort.</h2>
           <p className="text-muted-foreground">Open an archetype to inspect the ten simulated personas it represents.</p>
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
           {account.archetypes.map((archetype) => (
             <ArchetypeDisclosure archetype={archetype} key={archetype.archetypeIndex} />
           ))}
