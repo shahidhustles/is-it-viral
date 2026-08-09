@@ -48,4 +48,4 @@ export function getLandingCta({ accountDnaState, isAuthLoaded, isSignedIn }: Lan
 }
 
 export const advisoryDisclosure =
-  "It’s a simulated second opinion—not a promise of performance. It does not use or predict Instagram’s private ranking system. You decide what to make and whether to post it.";
+  "It’s a simulated second opinion. It cannot promise performance or predict Instagram’s private ranking system. You decide what to make and whether to post it.";

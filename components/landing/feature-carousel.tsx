@@ -37,7 +37,7 @@ export function FeatureCarousel({ features }: FeatureCarouselProps) {
   };
 
   return (
-    <section aria-label="How Is It Viral helps" className="border-y border-border">
+    <section aria-label="How Is It Viral works" className="border-y border-border">
       <div className="grid gap-7 py-7 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div>
           <p aria-live="polite" className="text-sm font-medium">{activeFeature.label} · {activeIndex + 1} of {features.length}</p>
@@ -45,10 +45,10 @@ export function FeatureCarousel({ features }: FeatureCarouselProps) {
           <p className="mt-3 max-w-xl leading-7 text-muted-foreground">{activeFeature.body}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button aria-label="Show previous way this helps" onClick={() => moveTo(activeIndex - 1)} size="icon-sm" variant="outline">
+          <Button aria-label="Show previous step" onClick={() => moveTo(activeIndex - 1)} size="icon-sm" variant="outline">
             <ChevronLeft aria-hidden="true" />
           </Button>
-          <Button aria-label="Show next way this helps" onClick={() => moveTo(activeIndex + 1)} size="icon-sm" variant="outline">
+          <Button aria-label="Show next step" onClick={() => moveTo(activeIndex + 1)} size="icon-sm" variant="outline">
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
@@ -56,8 +56,8 @@ export function FeatureCarousel({ features }: FeatureCarouselProps) {
 
       <div className="overflow-hidden border border-foreground bg-card p-4 shadow-[var(--shadow-action)] sm:p-6">
         <div className="flex items-center justify-between border-b border-border pb-4 text-sm">
-          <span className="inline-flex items-center gap-2 font-medium"><Icon aria-hidden="true" className="size-4" /> A clearer way to review a draft</span>
-          <span className="text-muted-foreground">Built around your reel</span>
+          <span className="inline-flex items-center gap-2 font-medium"><Icon aria-hidden="true" className="size-4" /> How your verdict is built</span>
+          <span className="text-muted-foreground">Illustrative walkthrough</span>
         </div>
         <div aria-labelledby={`${carouselId}-tab-${activeIndex}`} className="relative mt-5 min-h-72" id={`${carouselId}-panel`} role="tabpanel">
           <AnimatePresence initial={false} mode="wait">
@@ -75,7 +75,7 @@ export function FeatureCarousel({ features }: FeatureCarouselProps) {
         </div>
       </div>
 
-      <div aria-label="Choose how Is It Viral helps" className="mt-5 flex flex-wrap gap-2" role="tablist">
+      <div aria-label="Choose a walkthrough step" className="mt-5 flex flex-wrap gap-2" role="tablist">
         {features.map((feature, index) => (
           <button
             aria-controls={`${carouselId}-panel`}
@@ -138,13 +138,13 @@ function CohortPreview() {
           <CarouselGraphNode cx={133} cy={207} state="cream" />
           <CarouselGraphNode cx={346} cy={211} state="cream" />
         </svg>
-        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">Feedback that stays relevant</p>
+        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">A private, simulated first audience</p>
       </div>
       <dl className="divide-y divide-border border-y border-border">
-        <DataRow label="Your focus" value="Set once" />
-        <DataRow label="Your people" value="Saved context" />
-        <DataRow label="Each draft" value="Same lens" />
-        <DataRow label="Your goal" value="Stay consistent" />
+        <DataRow label="Your niche" value="Your topic" />
+        <DataRow label="Your audience" value="Your people" />
+        <DataRow label="Language + region" value="Your context" />
+        <DataRow label="First audience" value="100 people" />
       </dl>
     </div>
   );
@@ -152,19 +152,29 @@ function CohortPreview() {
 
 function VideoDnaPreview() {
   const signals = [
-    ["Opening", "Does it make people want to keep watching?"],
-    ["Message", "Is the point easy to follow?"],
-    ["Pace", "Does the edit drag or rush?"],
-    ["Fit", "Does this feel made for your people?"],
+    ["Every second", "A visual frame is sampled"],
+    ["What’s said", "The audio is transcribed"],
+    ["Your language", "Read in the context you set"],
+    ["The review", "Hook, clarity, pace, and fit"],
   ] as const;
 
   return (
     <div className="grid h-full gap-6 md:grid-cols-[11rem_minmax(0,1fr)]">
       <div className="relative min-h-56 overflow-hidden border border-foreground bg-foreground p-4 text-background">
-        <div className="absolute inset-x-4 top-4 h-px bg-white/30" />
-        <p className="mt-5 text-xs text-white/65">00:00–00:03</p>
-        <p className="mt-8 text-xl font-semibold leading-7">“Try this before your next reel.”</p>
-        <span className="absolute bottom-4 left-4 rounded-full border border-white/40 px-2 py-1 text-xs">Draft frame</span>
+        <p className="text-xs text-white/65">Your draft, sampled every second</p>
+        <div className="mt-5 grid grid-cols-4 gap-2" aria-hidden="true">
+          {["00:00", "00:01", "00:02", "00:03"].map((second, index) => (
+            <div className="h-16 border border-white/35 p-1.5" key={second}>
+              <div className={cn("h-full", index === 1 ? "bg-primary" : "bg-white/20")} />
+              <p className="mt-1 text-xs text-white/65">{second}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 border-t border-white/30 pt-3">
+          <p className="text-xs text-white/65">Spoken words</p>
+          <p className="mt-2 text-sm font-medium leading-6">“Try this before your next reel.”</p>
+        </div>
+        <span className="absolute bottom-4 left-4 rounded-full border border-white/40 px-2 py-1 text-xs">Video + audio</span>
       </div>
       <div className="space-y-3">
         {signals.map(([label, detail]) => (
@@ -173,7 +183,7 @@ function VideoDnaPreview() {
             <p className="text-sm text-muted-foreground">{detail}</p>
           </div>
         ))}
-        <p className="pt-2 text-sm leading-6 text-muted-foreground">You get the useful parts, in plain English.</p>
+        <p className="pt-2 text-sm leading-6 text-muted-foreground">The verdict uses every sampled visual and the full transcript.</p>
       </div>
     </div>
   );
@@ -184,23 +194,23 @@ function ReplayPreview() {
     <div className="grid h-full gap-6 md:grid-cols-[minmax(0,1fr)_11rem]">
       <div className="relative min-h-56 border border-border bg-background">
         <svg aria-hidden="true" className="absolute inset-0 size-full" fill="none" viewBox="0 0 500 260">
-          <path d="M51 130H153L234 61L325 131L445 84M153 130L233 201L325 131L407 201" stroke="var(--border)" strokeWidth="1.5" />
-          <path d="M51 130H153L234 61L325 131" stroke="var(--graphite)" strokeWidth="2.5" />
-          <path d="M153 130L233 201L325 131L407 201" stroke="var(--graphite)" strokeDasharray="3 5" strokeWidth="2.5" />
-          <CarouselGraphNode cx={51} cy={130} state="filled" />
-          <CarouselGraphNode cx={153} cy={130} state="filled" />
-          <CarouselGraphNode cx={234} cy={61} state="filled" />
-          <CarouselGraphNode cx={325} cy={131} state="filled" />
-          <CarouselGraphNode cx={445} cy={84} state="open" />
-          <CarouselGraphNode cx={233} cy={201} state="open" />
-          <CarouselGraphNode cx={407} cy={201} state="open" />
+          <path d="M92 130H194L294 72L405 122M194 130L294 188L405 122" stroke="var(--border)" strokeWidth="1.5" />
+          <path d="M92 130H194L294 72L405 122" stroke="var(--graphite)" strokeWidth="2.5" />
+          <path d="M194 130L294 188L405 122" stroke="var(--graphite)" strokeDasharray="3 5" strokeWidth="2.5" />
+          {[74, 88, 102, 116, 130, 144, 158, 172, 186, 200].map((cy, index) => (
+            <circle cx="64" cy={cy} fill={index < 4 ? "var(--graphite)" : "var(--studio-white)"} key={cy} r="5" stroke="var(--graphite)" strokeWidth="1.5" />
+          ))}
+          <CarouselGraphNode cx={194} cy={130} state="filled" />
+          <CarouselGraphNode cx={294} cy={72} state="mint" />
+          <CarouselGraphNode cx={294} cy={188} state="open" />
+          <CarouselGraphNode cx={405} cy={122} state="mint" />
         </svg>
-        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">What happens next</p>
+        <p className="absolute bottom-3 left-3 bg-background px-2 py-1 text-xs text-muted-foreground">First 10 viewers → next people → simulated verdict</p>
       </div>
       <ol className="space-y-3 border-l border-border pl-4 text-sm">
-        <li><span className="font-medium">See the verdict</span><p className="mt-1 text-muted-foreground">A clear read, not a mystery score</p></li>
-        <li><span className="font-medium">Get the why</span><p className="mt-1 text-muted-foreground">Understand what helped or hurt</p></li>
-        <li><span className="font-medium">Make your edit</span><p className="mt-1 text-muted-foreground">Start where the change matters most</p></li>
+        <li><span className="font-medium">First pass</span><p className="mt-1 text-muted-foreground">10 simulated people get the first look</p></li>
+        <li><span className="font-medium">Next pass</span><p className="mt-1 text-muted-foreground">Their simulated engagement decides what moves on</p></li>
+        <li><span className="font-medium">Verdict</span><p className="mt-1 text-muted-foreground">Up to six rounds produce your simulated result</p></li>
       </ol>
     </div>
   );

@@ -26,48 +26,48 @@ const processSteps = [
     icon: Fingerprint,
     title: "Tell us who you want to reach",
     description:
-      "Give us a quick picture of your content and the people you want it to land with. You only set this up once.",
-    detail: "Build your first audience",
+      "Describe your content and the people you want it to reach. Set this up once, then use it for every draft.",
+    detail: "Your first audience",
   },
   {
     icon: ScanLine,
     title: "Give your reel a first audience",
     description:
-      "We privately put your draft in front of a simulated version of the people you want to reach—before the real post goes live.",
-    detail: "A safe first reaction",
+      "Your draft gets a private test audience based on the people you want to reach, before you share it for real.",
+    detail: "See the first reaction",
   },
   {
     icon: Waypoints,
     title: "Edit before the real post goes live",
     description:
       "See what grabs attention, where the message gets muddy, and what to change before you hit publish.",
-    detail: "Make your next edit count",
+    detail: "Know what to edit next",
   },
 ] as const;
 
 const evidencePanels: readonly FeatureCarouselItem[] = [
   {
     icon: Network,
-    label: "Know your people",
-    title: "Put every draft in front of the right people first.",
-    body: "We build a private, simulated audience from the target group you describe—so your reel gets a first audience before your real followers see it.",
-    accent: "Your audience, before the real one sees it",
+    label: "Build the audience",
+    title: "We simulate the people you want to reach.",
+    body: "Your niche, audience, language, and region shape a private first audience for the reel before you share it for real.",
+    accent: "100 simulated people, shaped around your brief",
     preview: "cohort",
   },
   {
     icon: ScanLine,
-    label: "See what needs work",
-    title: "See how that first audience could respond.",
-    body: "Get a clear read on whether your opening, message, pace, and relevance are likely to hold attention—plus what to tighten before you post.",
-    accent: "Clear edits, not vague advice",
+    label: "Read the reel",
+    title: "We watch it frame by frame, then listen to what it says.",
+    body: "We sample the visuals every second and transcribe the spoken words in your chosen language. The review uses the whole reel.",
+    accent: "Visuals, spoken words, hook, clarity, pace, and fit",
     preview: "video-dna",
   },
   {
     icon: CirclePlay,
-    label: "Decide what to do next",
-    title: "Know whether to post, edit, or rethink it.",
-    body: "See a plain-English verdict and prioritized suggestions, so you know where your next edit will matter most.",
-    accent: "A practical next step for your draft",
+    label: "Test the reaction",
+    title: "We start with 10 people, then follow the response.",
+    body: "The simulation starts with 10 viewers. Their response decides whether the reel moves through shares and relevant recommendations. We run up to six rounds, then show you the verdict.",
+    accent: "A staged simulation, separate from Instagram ranking",
     preview: "replay",
   },
 ] as const;
@@ -93,7 +93,7 @@ export function LandingPage() {
               See how your audience could <em className="font-[family-name:var(--font-interpretation)] font-medium italic tracking-[-0.04em]"><TextAnimate text="react" type="calmInUp" /></em> before you post.
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              We put your draft reel in front of a private, simulated audience built around the people you want to reach—then show you what to tighten before it goes live.
+              Your draft reel gets a private, simulated first audience. See how they could respond, then decide what to tighten before you post.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
               <LandingAction cta={cta} size="lg" />
@@ -112,7 +112,7 @@ export function LandingPage() {
               Give every reel a first audience.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-8 text-muted-foreground">
-              Don’t wait for the real post to find out whether your message lands. See how a simulated version of your target audience could react first.
+              See how a simulated version of your target audience could react before the real post reaches anyone.
             </p>
           </div>
 
@@ -137,10 +137,10 @@ export function LandingPage() {
           <div className="grid gap-12 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] lg:gap-20">
             <div>
               <h2 className="text-balance text-3xl font-semibold tracking-[-0.03em] sm:text-4xl" id="evidence-heading">
-                See the reaction. Then make the edit.
+                How it works.
               </h2>
               <p className="mt-5 max-w-md text-lg leading-8 text-muted-foreground">
-                You don’t need another score. You need a clear answer from the audience you care about: what works, what loses people, and what to try next.
+                This is how a draft reel becomes a simulated verdict you can use before you post.
               </p>
               <div className="mt-8 border-l border-foreground pl-5">
                 <p className="font-medium">You’re still the creative director.</p>
@@ -201,7 +201,7 @@ function SimulationPreview() {
       <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
         <div>
           <p className="text-sm font-medium" id="simulation-preview-title">A first audience for your draft.</p>
-          <p className="mt-1 text-sm text-muted-foreground">Your reel meets a private, simulated version of the people you want to reach before the real post goes live.</p>
+          <p className="mt-1 text-sm text-muted-foreground">A private, simulated version of the people you want to reach sees the reel before the real post does.</p>
         </div>
         <span className="shrink-0 rounded-full border border-foreground px-3 py-1 text-xs font-medium">Before you post</span>
       </div>
@@ -223,7 +223,7 @@ function SimulationPreview() {
         </div>
       </div>
 
-      <figcaption className="mt-4 text-xs leading-5 text-muted-foreground">You get the useful takeaways—not a wall of analytics.</figcaption>
+      <figcaption className="mt-4 text-xs leading-5 text-muted-foreground">You get a short edit list you can act on.</figcaption>
     </figure>
   );
 }
